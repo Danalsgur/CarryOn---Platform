@@ -1,5 +1,3 @@
-// src/pages/Mypage.tsx
-
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
@@ -12,9 +10,17 @@ type Request = {
   status?: string
 }
 
+type Trip = {
+  id: string
+  to_city: string
+  departure_date: string
+  reservation_code?: string
+}
+
 export default function Mypage() {
   const [tab, setTab] = useState<'buyer' | 'carrier'>('buyer')
   const [requests, setRequests] = useState<Request[]>([])
+  const [trips, setTrips] = useState<Trip[]>([])
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -37,6 +43,18 @@ export default function Mypage() {
       if (data) setRequests(data)
     }
     fetchMyRequests()
+  }, [tab, userId])
+
+  useEffect(() => {
+    const fetchMyTrips = async () => {
+      if (!userId || tab !== 'carrier') return
+      const { data } = await supabase
+        .from('trips')
+        .select('id, to_city, departure_date, reservation_code')
+        .eq('user_id', userId)
+      if (data) setTrips(data)
+    }
+    fetchMyTrips()
   }, [tab, userId])
 
   return (
@@ -82,8 +100,16 @@ export default function Mypage() {
       )}
 
       {tab === 'carrier' && (
-        <div className="text-gray-600">
-          (🧳 내가 맡은 요청은 아직 안 불러오고 있음)
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-blue-700">내 여정 목록</h2>
+          {trips.length === 0 && <p className="text-sm text-gray-500">등록한 여정이 없습니다.</p>}
+          {trips.map((trip) => (
+            <div key={trip.id} className="p-4 border rounded-lg shadow-sm space-y-1">
+              <div className="font-bold">{trip.to_city}행 여정</div>
+              <div className="text-sm text-gray-600">출발: {trip.departure_date}</div>
+              <div className="text-sm text-gray-400">예약번호: {trip.reservation_code || '없음'}</div>
+            </div>
+          ))}
         </div>
       )}
     </div>

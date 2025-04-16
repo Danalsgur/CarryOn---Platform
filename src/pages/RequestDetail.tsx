@@ -8,6 +8,8 @@ import Button from '../components/Button'
 type Item = {
   name: string
   price: number
+  size?: string
+  quantity?: number
 }
 
 type Request = {
@@ -21,6 +23,7 @@ type Request = {
   items: Item[]
   description?: string
   chat_url?: string
+  buyer_id?: string
 }
 
 export default function RequestDetail() {
@@ -30,44 +33,46 @@ export default function RequestDetail() {
   const [hasTrip, setHasTrip] = useState(false)
   const [hasMatched, setHasMatched] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [isOwner, setIsOwner] = useState(false)
 
   useEffect(() => {
-    const fetchEverything = async () => {
+    const fetchData = async () => {
       setLoading(true)
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       const uid = user?.id ?? null
       setUserId(uid)
 
-      const { data: reqData } = await supabase
+      const { data: req } = await supabase
         .from('requests')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (reqData) setRequest(reqData as Request)
+      if (req) {
+        setRequest(req as Request)
+        setIsOwner(req.buyer_id === uid)
+      }
 
-      const { data: tripData } = await supabase
+      const { data: trip } = await supabase
         .from('trips')
         .select('id')
         .eq('carrier_id', uid)
         .maybeSingle()
-      setHasTrip(!!tripData)
+      setHasTrip(!!trip)
 
-      const { data: matchData } = await supabase
+      const { data: match } = await supabase
         .from('matches')
         .select('id')
         .eq('request_id', id)
         .eq('carrier_id', uid)
         .maybeSingle()
-      setHasMatched(!!matchData)
+      setHasMatched(!!match)
 
       setLoading(false)
     }
 
-    fetchEverything()
+    fetchData()
   }, [id])
 
   const handleApply = async () => {
@@ -105,30 +110,36 @@ export default function RequestDetail() {
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">{request.title}</h1>
-      <p>도시: {request.destination_city}</p>
-      <p>수고비: {request.reward.toLocaleString()} {request.currency}</p>
-      <p>날짜: {request.receive_start} ~ {request.receive_end}</p>
+      <p className="text-sm text-gray-600">도시: {request.destination_city}</p>
+      <p className="text-sm text-gray-600">수고비: {request.reward.toLocaleString()} {request.currency}</p>
+      <p className="text-sm text-gray-600">수령 기간: {request.receive_start} ~ {request.receive_end}</p>
 
       <div>
         <h3 className="font-semibold mt-4 mb-2">요청 품목</h3>
-        <ul className="list-disc ml-4">
+        <ul className="list-disc ml-4 space-y-1 text-sm text-gray-700">
           {request.items.map((item, i) => (
-            <li key={i}>{item.name} - {item.price.toLocaleString()}원</li>
+            <li key={i}>
+              {item.name} - {item.price.toLocaleString()}원
+              {item.quantity && ` × ${item.quantity}개`}
+              {item.size && ` (${item.size})`}
+            </li>
           ))}
         </ul>
       </div>
 
-      <div>
-        <h3 className="font-semibold mt-4 mb-1">요청 설명</h3>
-        <p className="text-sm text-gray-700">{request.description || '없음'}</p>
-      </div>
+      {request.description && (
+        <div>
+          <h3 className="font-semibold mt-4 mb-1">요청 설명</h3>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{request.description}</p>
+        </div>
+      )}
 
       <div className="space-x-4 mt-6">
         <Button
           onClick={handleApply}
           disabled={!hasTrip || hasMatched}
         >
-          {hasMatched ? '이미 지원함' : '맡을게요'}
+          {hasMatched ? '이미 지원함' : hasTrip ? '맡을게요' : '여정이 필요함'}
         </Button>
 
         <Button
@@ -139,6 +150,12 @@ export default function RequestDetail() {
           오픈채팅
         </Button>
       </div>
+
+      {isOwner && (
+        <div className="mt-10 text-sm text-blue-700 border-t pt-4">
+          이 요청은 내가 등록한 거예요. 매칭 확정 기능은 곧 추가됩니다.
+        </div>
+      )}
     </div>
   )
 }
