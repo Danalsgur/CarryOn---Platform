@@ -1,3 +1,5 @@
+// src/pages/RequestList.tsx
+
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
@@ -86,7 +88,7 @@ export default function RequestList() {
             <li
               key={req.id}
               className="border p-4 rounded-xl bg-white shadow hover:bg-gray-50 cursor-pointer transition"
-              onClick={() => navigate(`/requests/${req.id}`)}
+              onClick={() => navigate(`/request/${req.id}`)} // ✅ 여기 수정됨
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-blue-800">{req.title}</h2>
