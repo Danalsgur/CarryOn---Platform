@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
+import GoogleIcon from '../components/GoogleIcon' // 구글 아이콘 컴포넌트
 
 export default function Login() {
   const navigate = useNavigate()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const handleLogin = async () => {
+    setError(null)
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -23,12 +25,23 @@ export default function Login() {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      setError(`Google 로그인 실패: ${error.message}`)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
-        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">
-          로그인
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">로그인</h2>
 
         <div className="space-y-4">
           <Input label="이메일" value={email} setValue={setEmail} type="email" />
@@ -41,8 +54,20 @@ export default function Login() {
           onClick={handleLogin}
           className="w-full mt-6 bg-brand hover:bg-brand-dark text-white font-semibold py-2 rounded-control transition-all duration-200"
         >
-          로그인
+          이메일로 로그인
         </button>
+
+        <div className="my-4 text-center text-sm text-text-secondary">또는</div>
+
+        <div className="flex justify-center">
+          <button
+            onClick={handleGoogleLogin}
+            className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-300 hover:bg-gray-50 shadow-sm transition"
+            aria-label="Sign in with Google"
+          >
+            <GoogleIcon />
+          </button>
+        </div>
       </div>
     </div>
   )
