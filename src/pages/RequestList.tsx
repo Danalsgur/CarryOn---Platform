@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext' // ✅ 추가
 
 type Request = {
   id: string
@@ -16,6 +17,7 @@ type Request = {
 }
 
 export default function RequestList() {
+  const { loading: authLoading } = useAuth() // ✅ auth 로딩 상태 확인
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
@@ -24,6 +26,9 @@ export default function RequestList() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // ✅ authContext 준비 전이면 fetch 중단
+    if (authLoading) return
+
     const fetchRequests = async () => {
       setLoading(true)
 
@@ -54,7 +59,7 @@ export default function RequestList() {
     }
 
     fetchRequests()
-  }, [showCompleted, sortByReward])
+  }, [authLoading, showCompleted, sortByReward]) // ✅ authLoading 의존성 추가
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -88,7 +93,7 @@ export default function RequestList() {
             <li
               key={req.id}
               className="border p-4 rounded-xl bg-white shadow hover:bg-gray-50 cursor-pointer transition"
-              onClick={() => navigate(`/request/${req.id}`)} // ✅ 여기 수정됨
+              onClick={() => navigate(`/request/${req.id}`)}
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-blue-800">{req.title}</h2>

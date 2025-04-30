@@ -1,9 +1,9 @@
-// src/contexts/AuthContext.tsx
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase'
 import { User } from '@supabase/supabase-js'
 import { useNavigate } from 'react-router-dom'
 
+// 🔄 Profile 타입 정의
 type Profile = {
   id: string
   name: string
@@ -12,11 +12,13 @@ type Profile = {
   country_code: string
 }
 
+// 🔄 Context 타입 정의
 type AuthContextType = {
   user: User | null
   profile: Profile | null
   loading: boolean
   logout: () => Promise<void>
+  setProfile: (p: Profile | null) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,13 +28,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const hasRun = useRef(false)
 
-  // 초기 세션 복구 및 프로필 fetch
   useEffect(() => {
+    if (hasRun.current) return
+    hasRun.current = true
+
     const init = async () => {
       console.log('🔁 [init] 세션 복구 시작')
+
       const { data: sessionData } = await supabase.auth.getSession()
-      const sessionUser = sessionData.session?.user ?? null
+      let sessionUser = sessionData.session?.user ?? null
+
+      if (!sessionUser && sessionData.session) {
+        const { data: userData, error } = await supabase.auth.getUser()
+        if (error) console.error('🛠 getUser error:', error)
+        sessionUser = userData.user
+      }
+
       setUser(sessionUser)
 
       if (sessionUser) {
@@ -42,42 +55,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .eq('id', sessionUser.id)
           .maybeSingle()
 
-        setProfile(profileData ?? null)
+        const isIncomplete =
+          !profileData?.name || !profileData?.nickname || !profileData?.phone
+
+        if (!profileData || isIncomplete) {
+          setProfile(null)
+          setLoading(false)
+          navigate('/profile/setup')
+          return
+        } else {
+          setProfile(profileData)
+        }
       }
 
       setLoading(false)
-    }
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔄 [onAuthStateChange] 감지됨:', event)
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          console.log('🔄 [onAuthStateChange] 감지됨:', event)
+          const currentUser = session?.user ?? null
+          setUser(currentUser)
 
-        if (currentUser) {
-          console.log('👤 [listener] 유저:', currentUser)
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .maybeSingle()
+          if (currentUser) {
+            console.log('👤 [listener] 유저:', currentUser)
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', currentUser.id)
+              .maybeSingle()
 
-          setProfile(profileData ?? null)
+            const isIncomplete =
+              !profileData?.name || !profileData?.nickname || !profileData?.phone
 
-          if (!profileData) {
-            navigate('/profile/setup')
+            if (!profileData || isIncomplete) {
+              setProfile(null)
+              setLoading(false)
+              navigate('/profile/setup')
+              return
+            } else {
+              setProfile(profileData)
+            }
+          } else {
+            setProfile(null)
           }
-        } else {
-          setProfile(null)
+
+          setLoading(false)
         }
+      )
+
+      return () => {
+        listener.subscription.unsubscribe()
       }
-    )
+    }
 
     init()
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
   }, [navigate])
 
   const logout = async () => {
@@ -89,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, logout, setProfile }}>
       {children}
     </AuthContext.Provider>
   )

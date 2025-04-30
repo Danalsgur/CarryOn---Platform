@@ -7,7 +7,7 @@ import Button from '../components/Button'
 
 export default function ProfileSetup() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, setProfile } = useAuth()
 
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
@@ -39,7 +39,20 @@ export default function ProfileSetup() {
         setError(`프로필 저장 실패: ${error.message}`)
       }
     } else {
-      navigate('/mypage')
+      const updatedProfile = {
+        id: user!.id,
+        name,
+        nickname,
+        phone,
+        country_code: 'KR',
+      }
+
+      setProfile(updatedProfile)
+
+      // ✅ 타이밍 보장용 setTimeout
+      setTimeout(() => {
+        navigate('/mypage')
+      }, 0)
     }
   }  
 

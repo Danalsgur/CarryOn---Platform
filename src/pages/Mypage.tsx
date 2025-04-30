@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
+import { useAuth } from '../contexts/AuthContext'
 
+// 🔸 타입 정의
 type Request = {
   id: string
   title: string
@@ -18,44 +20,42 @@ type Trip = {
 }
 
 export default function Mypage() {
+  const { user } = useAuth()
   const [tab, setTab] = useState<'buyer' | 'carrier'>('buyer')
   const [requests, setRequests] = useState<Request[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
-  const [userId, setUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      setUserId(user?.id ?? null)
-    }
-    fetchUser()
-  }, [])
-
-  useEffect(() => {
-    const fetchMyRequests = async () => {
-      if (!userId || tab !== 'buyer') return
+  const fetchData = async (tab: 'buyer' | 'carrier', userId: string) => {
+    if (tab === 'buyer') {
       const { data } = await supabase
         .from('requests')
         .select('id, title, reward, currency, status')
         .eq('user_id', userId)
       if (data) setRequests(data)
     }
-    fetchMyRequests()
-  }, [tab, userId])
 
-  useEffect(() => {
-    const fetchMyTrips = async () => {
-      if (!userId || tab !== 'carrier') return
+    if (tab === 'carrier') {
       const { data } = await supabase
         .from('trips')
         .select('id, to_city, departure_date, reservation_code')
         .eq('user_id', userId)
       if (data) setTrips(data)
     }
-    fetchMyTrips()
-  }, [tab, userId])
+  }
+
+  useEffect(() => {
+    if (!user?.id) return
+    fetchData(tab, user.id)
+  }, [tab, user?.id])
+
+  useEffect(() => {
+    if (!user?.id) return
+    // 강제 리렌더링 유도 (탭 리셋)
+    setTab((prev) => (prev === 'buyer' ? 'carrier' : 'buyer'))
+    setTimeout(() => {
+      setTab((prev) => (prev === 'buyer' ? 'buyer' : 'carrier'))
+    }, 0)
+  }, [user?.id])
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">

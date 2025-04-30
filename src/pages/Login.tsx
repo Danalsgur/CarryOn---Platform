@@ -68,6 +68,16 @@ export default function Login() {
             <GoogleIcon />
           </button>
         </div>
+        {/* ✅ 추가 */}
+<div className="mt-6 text-sm text-center text-text-secondary">
+  계정이 없으신가요?{' '}
+  <span
+    onClick={() => navigate('/signup')}
+    className="text-brand hover:underline cursor-pointer font-medium"
+  >
+    회원가입
+  </span>
+</div>
       </div>
     </div>
   )

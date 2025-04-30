@@ -110,7 +110,7 @@ export default function RequestNew() {
 
   const handleSubmit = async () => {
     if (!title || !reward || Number(reward.replace(/,/g, '')) < 10000) {
-      setError('모든 필수 항목을 입력했는지, 수고비가 10,000원 이상인지 확인해주세요.')
+      setError('모든 필수 항목을 입력했는지, 수고비가 15,000원 이상인지 확인해주세요.')
       return
     }
 

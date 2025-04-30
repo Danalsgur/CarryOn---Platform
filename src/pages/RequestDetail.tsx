@@ -1,7 +1,5 @@
-// src/pages/RequestDetail.tsx
-
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 
@@ -28,6 +26,8 @@ type Request = {
 
 export default function RequestDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
+
   const [request, setRequest] = useState<Request | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasTrip, setHasTrip] = useState(false)
@@ -40,60 +40,95 @@ export default function RequestDetail() {
       setLoading(true)
 
       const { data: { user } } = await supabase.auth.getUser()
-      const uid = user?.id ?? null
+
+      if (!user) {
+        navigate('/login')
+        return
+      }
+
+      const uid = user.id
       setUserId(uid)
 
-      const { data: req } = await supabase
+      console.log('👤 userId:', uid)
+
+      const { data: req, error: reqError } = await supabase
         .from('requests')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (req) {
-        setRequest(req as Request)
-        setIsOwner(req.buyer_id === uid)
+      if (reqError) {
+        console.error('❌ 요청 가져오기 실패:', reqError.message)
+        navigate('/requests')
+        return
       }
 
-      const { data: trip } = await supabase
+      if (!req) {
+        navigate('/requests')
+        return
+      }
+
+      setRequest(req as Request)
+      setIsOwner(req.buyer_id === uid)
+
+      const { data: trip, error: tripError } = await supabase
         .from('trips')
         .select('id')
-        .eq('carrier_id', uid)
+        .eq('user_id', uid)
         .maybeSingle()
+
+      if (tripError) {
+        console.error('❌ 여정 확인 실패:', tripError.message)
+      } else {
+        console.log('🧳 여정 확인됨:', trip)
+      }
+
       setHasTrip(!!trip)
 
-      const { data: match } = await supabase
+      const { data: match, error: matchError } = await supabase
         .from('matches')
         .select('id')
         .eq('request_id', id)
-        .eq('carrier_id', uid)
+        .eq('user_id', uid)
         .maybeSingle()
-      setHasMatched(!!match)
 
+      if (matchError) {
+        console.error('❌ 매치 확인 실패:', matchError.message)
+      }
+
+      setHasMatched(!!match)
       setLoading(false)
     }
 
     fetchData()
-  }, [id])
+  }, [id, navigate])
 
   const handleApply = async () => {
-    if (!hasTrip || !userId || !request) return
+    if (!hasTrip) {
+      alert('여정을 먼저 등록해주세요.')
+      navigate('/trip/new')
+      return
+    }
+
+    if (!userId || !request) return
 
     const { data: myTrip } = await supabase
       .from('trips')
       .select('id')
-      .eq('carrier_id', userId)
+      .eq('user_id', userId)
       .limit(1)
       .single()
 
     if (!myTrip) {
       alert('여정을 먼저 등록해주세요.')
+      navigate('/trip/new')
       return
     }
 
     const { error } = await supabase.from('matches').insert({
       request_id: request.id,
       trip_id: myTrip.id,
-      carrier_id: userId,
+      user_id: userId,
     })
 
     if (error) {
@@ -101,11 +136,12 @@ export default function RequestDetail() {
     } else {
       alert('지원 완료! 바이어가 확인하면 연락이 올 거예요.')
       setHasMatched(true)
+      navigate('/mypage')
     }
   }
 
   if (loading) return <div className="p-4">불러오는 중...</div>
-  if (!request) return <div className="p-4">요청을 찾을 수 없습니다.</div>
+  if (!request) return null
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
