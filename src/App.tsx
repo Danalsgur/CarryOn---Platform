@@ -12,7 +12,9 @@ import Mypage from './pages/Mypage'
 import RequestNew from './pages/RequestNew'
 import RequestDetail from './pages/RequestDetail'
 import RequestList from './pages/RequestList'
+import RequestEdit from './pages/RequestEdit' // ✅ 추가
 import TripNew from './pages/TripNew'
+import TripEdit from './pages/TripEdit'
 
 function App() {
   // 🔥 탭 포커스 복귀 시 강제 새로고침
@@ -75,10 +77,26 @@ function App() {
           }
         />
         <Route
+          path="/request/edit/:id"
+          element={
+            <RequireCompleteProfile>
+              <RequestEdit />
+            </RequireCompleteProfile>
+          }
+        />
+        <Route
           path="/trip/new"
           element={
             <RequireCompleteProfile>
               <TripNew />
+            </RequireCompleteProfile>
+          }
+        />
+        <Route
+          path="/trip/edit/:id"
+          element={
+            <RequireCompleteProfile>
+              <TripEdit />
             </RequireCompleteProfile>
           }
         />
