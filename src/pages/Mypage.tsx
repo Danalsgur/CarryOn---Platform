@@ -1,10 +1,21 @@
+// 생략된 import 부분 유지
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 import { useAuth } from '../contexts/AuthContext'
 
-// 🔸 타입 정의
+// 타입 정의 생략 없이 유지
+type MatchItem = {
+  id: string
+  request: {
+    id: string
+    title: string
+    reward: number
+    currency: string
+  } | null
+}
+
 type Request = {
   id: string
   title: string
@@ -20,13 +31,13 @@ type Trip = {
   departure_date: string
   reservation_code?: string
   status: string
-  matches: { id: string }[]
+  matches: MatchItem[]
 }
 
 export default function Mypage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const [tab, setTab] = useState<'buyer' | 'carrier'>('buyer')
+  const { user, profile, logout } = useAuth()
+  const [tab, setTab] = useState<'buyer' | 'carrier' | null>(null)
   const [requests, setRequests] = useState<Request[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
 
@@ -37,37 +48,72 @@ export default function Mypage() {
         .select('id, title, reward, currency, status, matches(id)')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
+
       if (data) setRequests(data)
     }
 
     if (tab === 'carrier') {
       const { data } = await supabase
         .from('trips')
-        .select('id, to_city, departure_date, reservation_code, status, matches(id)')
+        .select(`
+          id,
+          to_city,
+          departure_date,
+          reservation_code,
+          status,
+          matches (
+            id,
+            request:request_id (
+              id,
+              title,
+              reward,
+              currency
+            )
+          )
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
-      if (data) setTrips(data)
+
+      if (data) {
+        const normalized: Trip[] = data.map((trip): Trip => ({
+          ...trip,
+          matches: trip.matches.map((match): MatchItem => ({
+            ...match,
+            request: Array.isArray(match.request) ? match.request[0] : match.request,
+          })),
+        }))
+        setTrips(normalized)
+      }
     }
   }
 
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id || !tab) return
     fetchData(tab, user.id)
   }, [tab, user?.id])
-
-  useEffect(() => {
-    if (!user?.id) return
-    setTab((prev) => (prev === 'buyer' ? 'carrier' : 'buyer'))
-    setTimeout(() => {
-      setTab((prev) => (prev === 'buyer' ? 'buyer' : 'carrier'))
-    }, 0)
-  }, [user?.id])
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">마이페이지</h1>
 
-      <div className="flex gap-2 border-b pb-2">
+      {/* 유저 정보 카드 */}
+      <div className="border rounded-md p-4 bg-gray-50 text-sm text-gray-700 space-y-1">
+        <div><strong>이름:</strong> {profile?.name || '이름 없음'}</div>
+        <div><strong>닉네임:</strong> {profile?.nickname || '닉네임 없음'}</div>
+        <div><strong>이메일:</strong> {user?.email}</div>
+        <div>
+          <strong>가입일:</strong>{' '}
+          {user?.created_at
+            ? new Date(user.created_at).toLocaleDateString('ko-KR')
+            : '정보 없음'}
+        </div>
+        <div className="pt-2">
+          <Button variant="outline" size="sm" onClick={logout}>로그아웃</Button>
+        </div>
+      </div>
+
+      {/* 탭 선택 */}
+      <div className="flex gap-2 border-b pb-2 mt-4">
         <button
           className={`px-3 py-1 rounded-t ${tab === 'buyer' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
           onClick={() => setTab('buyer')}
@@ -81,6 +127,10 @@ export default function Mypage() {
           캐리어용
         </button>
       </div>
+
+      {tab === null && (
+        <p className="text-sm text-gray-500 pt-4">탭을 선택해주세요.</p>
+      )}
 
       {tab === 'buyer' && (
         <div className="space-y-4">
@@ -138,17 +188,17 @@ export default function Mypage() {
               trip.status === 'cancelled'
                 ? '취소됨'
                 : isPast
-                  ? '출발 완료'
-                  : '진행중'
+                ? '출발 완료'
+                : '진행중'
 
             return (
-              <div key={trip.id} className="p-4 border rounded-lg shadow-sm space-y-1">
+              <div key={trip.id} className="p-4 border rounded-lg shadow-sm space-y-2">
                 <div className="font-bold">{trip.to_city}행 여정</div>
                 <div className="text-sm text-gray-600">출발: {trip.departure_date}</div>
                 <div className="text-sm text-gray-400">예약번호: {trip.reservation_code || '없음'}</div>
                 <div className="text-sm text-gray-500">상태: {displayStatus}</div>
 
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-2">
                   <Button
                     size="sm"
                     disabled={hasMatch}
@@ -158,11 +208,6 @@ export default function Mypage() {
                   >
                     수정
                   </Button>
-
-                  {hasMatch && (
-                    <p className="text-xs text-red-500 mt-1">※ 매칭 요청이 있어 수정할 수 없습니다.</p>
-                  )}
-
                   <Button
                     size="sm"
                     variant="outline"
@@ -190,6 +235,34 @@ export default function Mypage() {
                   >
                     삭제
                   </Button>
+                </div>
+
+                {/* 🔻 문구를 버튼 아래로 이동 */}
+                {hasMatch && (
+                  <p className="text-xs text-red-500 mt-1">※ 매칭 요청이 있어 수정할 수 없습니다.</p>
+                )}
+
+                {/* 🔹 매칭 요청 리스트 */}
+                <div className="bg-gray-50 rounded-md p-3 border mt-3">
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700">지원한 요청 목록</h4>
+                  {trip.matches.length === 0 ? (
+                    <p className="text-sm text-gray-500">지원한 요청이 없습니다.</p>
+                  ) : (
+                    <ul className="space-y-1 text-sm text-blue-700 font-medium">
+                      {trip.matches.map((m) => (
+                        <li
+                          key={m.id}
+                          className="flex justify-between items-center cursor-pointer hover:bg-blue-50 hover:shadow-sm transition px-3 py-2 rounded-md"
+                          onClick={() => {
+                            if (m.request?.id) navigate(`/request/${m.request.id}`)
+                          }}
+                        >
+                          <span>{m.request?.title}</span>
+                          <span>{m.request?.reward?.toLocaleString()} {m.request?.currency}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             )

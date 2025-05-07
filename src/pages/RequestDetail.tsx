@@ -31,7 +31,7 @@ export default function RequestDetail() {
   const [request, setRequest] = useState<Request | null>(null)
   const [loading, setLoading] = useState(true)
   const [hasTrip, setHasTrip] = useState(false)
-  const [hasMatched, setHasMatched] = useState(false)
+  const [matchStatus, setMatchStatus] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [isOwner, setIsOwner] = useState(false)
 
@@ -49,21 +49,13 @@ export default function RequestDetail() {
       const uid = user.id
       setUserId(uid)
 
-      console.log('👤 userId:', uid)
-
       const { data: req, error: reqError } = await supabase
         .from('requests')
         .select('*')
         .eq('id', id)
         .single()
 
-      if (reqError) {
-        console.error('❌ 요청 가져오기 실패:', reqError.message)
-        navigate('/requests')
-        return
-      }
-
-      if (!req) {
+      if (reqError || !req) {
         navigate('/requests')
         return
       }
@@ -71,32 +63,27 @@ export default function RequestDetail() {
       setRequest(req as Request)
       setIsOwner(req.buyer_id === uid)
 
-      const { data: trip, error: tripError } = await supabase
+      const { data: trip } = await supabase
         .from('trips')
         .select('id')
         .eq('user_id', uid)
         .maybeSingle()
 
-      if (tripError) {
-        console.error('❌ 여정 확인 실패:', tripError.message)
-      } else {
-        console.log('🧳 여정 확인됨:', trip)
-      }
-
       setHasTrip(!!trip)
 
-      const { data: match, error: matchError } = await supabase
+      const { data: match } = await supabase
         .from('matches')
-        .select('id')
+        .select('id, status')
         .eq('request_id', id)
         .eq('user_id', uid)
         .maybeSingle()
 
-      if (matchError) {
-        console.error('❌ 매치 확인 실패:', matchError.message)
+      if (match && match.status !== 'cancelled') {
+        setMatchStatus(match.status)
+      } else {
+        setMatchStatus(null)
       }
 
-      setHasMatched(!!match)
       setLoading(false)
     }
 
@@ -125,18 +112,56 @@ export default function RequestDetail() {
       return
     }
 
-    const { error } = await supabase.from('matches').insert({
-      request_id: request.id,
-      trip_id: myTrip.id,
-      user_id: userId,
-    })
+    const { data: existingMatch } = await supabase
+      .from('matches')
+      .select('id, status')
+      .eq('request_id', request.id)
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (existingMatch) {
+      await supabase
+        .from('matches')
+        .update({ status: 'pending' })
+        .eq('id', existingMatch.id)
+    } else {
+      await supabase.from('matches').insert({
+        request_id: request.id,
+        trip_id: myTrip.id,
+        user_id: userId,
+        status: 'pending'
+      })
+    }
+
+    alert('지원 완료! 아래 오픈채팅 링크를 통해 바이어에게 먼저 연락해보세요.')
+    setMatchStatus('pending')
+  }
+
+  const handleCancel = async () => {
+    if (!userId || !request) return
+
+    const { data: match } = await supabase
+      .from('matches')
+      .select('id')
+      .eq('request_id', request.id)
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (!match) {
+      alert('취소할 매칭이 없습니다.')
+      return
+    }
+
+    const { error } = await supabase
+      .from('matches')
+      .update({ status: 'cancelled' })
+      .eq('id', match.id)
 
     if (error) {
-      alert(error.message)
+      alert('지원 취소 실패: ' + error.message)
     } else {
-      alert('지원 완료! 바이어가 확인하면 연락이 올 거예요.')
-      setHasMatched(true)
-      navigate('/mypage')
+      alert('지원이 취소되었습니다.')
+      setMatchStatus(null)
     }
   }
 
@@ -171,17 +196,19 @@ export default function RequestDetail() {
       )}
 
       <div className="space-x-4 mt-6">
-        <Button
-          onClick={handleApply}
-          disabled={!hasTrip || hasMatched}
-        >
-          {hasMatched ? '이미 지원함' : hasTrip ? '맡을게요' : '여정이 필요함'}
-        </Button>
+        {matchStatus === 'pending' ? (
+          <>
+            <Button disabled>지원 완료</Button>
+            <Button variant="outline" onClick={handleCancel}>지원 취소</Button>
+          </>
+        ) : (
+          <Button onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
+        )}
 
         <Button
           variant="outline"
           onClick={() => window.open(request.chat_url, '_blank')}
-          disabled={!hasMatched || !request.chat_url}
+          disabled={matchStatus !== 'pending' || !request.chat_url}
         >
           오픈채팅
         </Button>
