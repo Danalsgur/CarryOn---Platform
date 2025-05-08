@@ -4,7 +4,7 @@ import { ButtonHTMLAttributes } from 'react'
 import clsx from 'clsx'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg' // ✅ 'lg' 추가
   variant?: 'default' | 'outline'
 }
 
@@ -20,6 +20,7 @@ export default function Button({
   const sizeStyle = {
     sm: 'text-sm px-3 py-1',
     md: 'text-base px-4 py-2',
+    lg: 'text-lg px-6 py-3', // ✅ lg 스타일 추가
   }[size]
 
   const variantStyle = {
