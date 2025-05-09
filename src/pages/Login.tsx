@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
-import GoogleIcon from '../components/GoogleIcon' // 구글 아이콘 컴포넌트
+import GoogleIcon from '../components/GoogleIcon'
+import Header from '../components/Layout/Header' // ✅ 헤더 추가
 
 export default function Login() {
   const navigate = useNavigate()
@@ -39,45 +40,48 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
-        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">로그인</h2>
+    <div className="min-h-screen bg-background">
+      <Header /> {/* ✅ 헤더 삽입 */}
+      <div className="flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200 mt-12">
+          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">로그인</h2>
 
-        <div className="space-y-4">
-          <Input label="이메일" value={email} setValue={setEmail} type="email" />
-          <Input label="비밀번호" value={password} setValue={setPassword} type="password" />
-        </div>
+          <div className="space-y-4">
+            <Input label="이메일" value={email} setValue={setEmail} type="email" />
+            <Input label="비밀번호" value={password} setValue={setPassword} type="password" />
+          </div>
 
-        {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
+          {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
 
-        <button
-          onClick={handleLogin}
-          className="w-full mt-6 bg-brand hover:bg-brand-dark text-white font-semibold py-2 rounded-control transition-all duration-200"
-        >
-          이메일로 로그인
-        </button>
-
-        <div className="my-4 text-center text-sm text-text-secondary">또는</div>
-
-        <div className="flex justify-center">
           <button
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-300 hover:bg-gray-50 shadow-sm transition"
-            aria-label="Sign in with Google"
+            onClick={handleLogin}
+            className="w-full mt-6 bg-brand hover:bg-brand-dark text-white font-semibold py-2 rounded-control transition-all duration-200"
           >
-            <GoogleIcon />
+            이메일로 로그인
           </button>
+
+          <div className="my-4 text-center text-sm text-text-secondary">또는</div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={handleGoogleLogin}
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-300 hover:bg-gray-50 shadow-sm transition"
+              aria-label="Sign in with Google"
+            >
+              <GoogleIcon />
+            </button>
+          </div>
+
+          <div className="mt-6 text-sm text-center text-text-secondary">
+            계정이 없으신가요?{' '}
+            <span
+              onClick={() => navigate('/signup')}
+              className="text-brand hover:underline cursor-pointer font-medium"
+            >
+              회원가입
+            </span>
+          </div>
         </div>
-        {/* ✅ 추가 */}
-<div className="mt-6 text-sm text-center text-text-secondary">
-  계정이 없으신가요?{' '}
-  <span
-    onClick={() => navigate('/signup')}
-    className="text-brand hover:underline cursor-pointer font-medium"
-  >
-    회원가입
-  </span>
-</div>
       </div>
     </div>
   )

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext' // ✅ 추가
+import { useAuth } from '../contexts/AuthContext'
 
 type Request = {
   id: string
@@ -17,7 +17,7 @@ type Request = {
 }
 
 export default function RequestList() {
-  const { loading: authLoading } = useAuth() // ✅ auth 로딩 상태 확인
+  const { loading: authLoading } = useAuth()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
   const [showCompleted, setShowCompleted] = useState(false)
@@ -26,7 +26,6 @@ export default function RequestList() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // ✅ authContext 준비 전이면 fetch 중단
     if (authLoading) return
 
     const fetchRequests = async () => {
@@ -59,7 +58,7 @@ export default function RequestList() {
     }
 
     fetchRequests()
-  }, [authLoading, showCompleted, sortByReward]) // ✅ authLoading 의존성 추가
+  }, [authLoading, showCompleted, sortByReward])
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -87,6 +86,8 @@ export default function RequestList() {
 
       {loading ? (
         <p className="text-sm text-gray-500">불러오는 중...</p>
+      ) : requests.length === 0 ? (
+        <p className="text-sm text-gray-400">표시할 요청이 없습니다.</p>
       ) : (
         <ul className="space-y-4">
           {requests.map((req) => (

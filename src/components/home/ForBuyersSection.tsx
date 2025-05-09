@@ -9,11 +9,10 @@ function ForBuyersSection() {
   return (
     <section className="bg-white py-20 px-4 border-t border-gray-200">
       <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-2xl font-bold text-blue-800 mb-4">해외에서 한국 물건, 더 쉽게</h2>
+        <h2 className="text-2xl font-bold text-blue-800 mb-4">한국 물건, 더 싸고 자유롭게</h2>
         <p className="text-gray-600 text-base mb-8">
-          직구보다 싸고, 빠르고, 덜 귀찮은 방법.  
-          한국에서 출발하는 여행자의 짐 공간을 통해  
-          원하는 물건을 더 자연스럽게 받아보세요.
+          직구보다 더 저렴하게. 원하는 물건을 원하는 방식으로.<br />
+          캐리어의 여유 짐 공간을 통해, 제한 없이 유연하게 받아보세요.
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">

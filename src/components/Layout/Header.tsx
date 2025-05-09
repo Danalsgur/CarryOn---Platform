@@ -4,7 +4,6 @@ import { useAuth } from '../../contexts/AuthContext'
 export default function Header() {
   const { user, profile, loading } = useAuth()
 
-  // ✅ 세션이 아직 복구 중이면, 헤더 안 보여줌
   if (loading) {
     console.log('⏳ Header: auth 로딩 중... 렌더링 보류')
     return null
@@ -22,10 +21,7 @@ export default function Header() {
         <Link to="/mypage">마이페이지</Link>
 
         {!user && (
-          <>
-            <Link to="/login">로그인</Link>
-            <Link to="/signup">회원가입</Link>
-          </>
+          <Link to="/login">로그인</Link> // ✅ 회원가입 제거
         )}
       </nav>
     </header>

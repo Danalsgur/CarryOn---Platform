@@ -12,12 +12,12 @@ import Mypage from './pages/Mypage'
 import RequestNew from './pages/RequestNew'
 import RequestDetail from './pages/RequestDetail'
 import RequestList from './pages/RequestList'
-import RequestEdit from './pages/RequestEdit' // ✅ 추가
+import RequestEdit from './pages/RequestEdit'
 import TripNew from './pages/TripNew'
 import TripEdit from './pages/TripEdit'
 
 function App() {
-  // 🔥 탭 포커스 복귀 시 강제 새로고침
+  // 🔄 탭 포커스 복귀 시 새로고침
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -39,67 +39,22 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
 
-      {/* ✅ Layout 씌워야 하는 페이지들 */}
+      {/* ✅ Layout 적용되는 라우트들 */}
       <Route element={<Layout />}>
+        {/* 🔓 공개 페이지 */}
         <Route path="/" element={<Home />} />
-        <Route path="/profile/setup" element={<ProfileSetup />} />
+        <Route path="/requests" element={<RequestList />} />
+        <Route path="/request/:id" element={<RequestDetail />} />
 
-        <Route
-          path="/mypage"
-          element={
-            <RequireCompleteProfile>
-              <Mypage />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/requests"
-          element={
-            <RequireCompleteProfile>
-              <RequestList />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/request/new"
-          element={
-            <RequireCompleteProfile>
-              <RequestNew />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/request/:id"
-          element={
-            <RequireCompleteProfile>
-              <RequestDetail />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/request/edit/:id"
-          element={
-            <RequireCompleteProfile>
-              <RequestEdit />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/trip/new"
-          element={
-            <RequireCompleteProfile>
-              <TripNew />
-            </RequireCompleteProfile>
-          }
-        />
-        <Route
-          path="/trip/edit/:id"
-          element={
-            <RequireCompleteProfile>
-              <TripEdit />
-            </RequireCompleteProfile>
-          }
-        />
+        {/* 🔐 로그인 + 프로필 완료 필요한 페이지 */}
+        <Route element={<RequireCompleteProfile />}>
+          <Route path="/profile/setup" element={<ProfileSetup />} />
+          <Route path="/mypage" element={<Mypage />} />
+          <Route path="/request/new" element={<RequestNew />} />
+          <Route path="/request/edit/:id" element={<RequestEdit />} />
+          <Route path="/trip/new" element={<TripNew />} />
+          <Route path="/trip/edit/:id" element={<TripEdit />} />
+        </Route>
       </Route>
     </Routes>
   )

@@ -8,6 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 // 타입 정의 생략 없이 유지
 type MatchItem = {
   id: string
+  status?: string
   request: {
     id: string
     title: string
@@ -63,6 +64,7 @@ export default function Mypage() {
           status,
           matches (
             id,
+            status,
             request:request_id (
               id,
               title,
@@ -237,28 +239,36 @@ export default function Mypage() {
                   </Button>
                 </div>
 
-                {/* 🔻 문구를 버튼 아래로 이동 */}
                 {hasMatch && (
                   <p className="text-xs text-red-500 mt-1">※ 매칭 요청이 있어 수정할 수 없습니다.</p>
                 )}
 
-                {/* 🔹 매칭 요청 리스트 */}
                 <div className="bg-gray-50 rounded-md p-3 border mt-3">
                   <h4 className="text-sm font-semibold mb-2 text-gray-700">지원한 요청 목록</h4>
                   {trip.matches.length === 0 ? (
                     <p className="text-sm text-gray-500">지원한 요청이 없습니다.</p>
                   ) : (
-                    <ul className="space-y-1 text-sm text-blue-700 font-medium">
+                    <ul className="space-y-1 text-sm font-medium text-blue-700">
                       {trip.matches.map((m) => (
                         <li
                           key={m.id}
-                          className="flex justify-between items-center cursor-pointer hover:bg-blue-50 hover:shadow-sm transition px-3 py-2 rounded-md"
+                          className="px-3 py-2 rounded-md hover:bg-blue-50 hover:shadow-sm border transition cursor-pointer"
                           onClick={() => {
                             if (m.request?.id) navigate(`/request/${m.request.id}`)
                           }}
                         >
-                          <span>{m.request?.title}</span>
-                          <span>{m.request?.reward?.toLocaleString()} {m.request?.currency}</span>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-text-primary">{m.request?.title}</span>
+                            <span className="text-sm text-gray-500">
+                              {m.request?.reward?.toLocaleString()} {m.request?.currency}
+                            </span>
+                          </div>
+                          <div className="text-xs mt-1 text-gray-500">
+                            {m.status === 'pending' && '🟡 지원 대기중'}
+                            {m.status === 'accepted' && '🟢 수락됨'}
+                            {m.status === 'cancelled' && '🔴 취소됨'}
+                            {!m.status && '⏳ 상태 정보 없음'}
+                          </div>
                         </li>
                       ))}
                     </ul>

@@ -1,10 +1,8 @@
-// RequireCompleteProfile.tsx
 import { useAuth } from '../contexts/AuthContext'
-import { Navigate } from 'react-router-dom'
-import { ReactNode } from 'react'
+import { Navigate, Outlet } from 'react-router-dom'
 
-export default function RequireCompleteProfile({ children }: { children: ReactNode }) {
-  const { loading, profile } = useAuth()
+export default function RequireCompleteProfile() {
+  const { loading, user, profile } = useAuth()
 
   if (loading) {
     return (
@@ -14,8 +12,10 @@ export default function RequireCompleteProfile({ children }: { children: ReactNo
     )
   }
 
+  if (!user) return <Navigate to="/login" replace />
+
   const isIncomplete = !profile?.name || !profile?.nickname || !profile?.phone
   if (isIncomplete) return <Navigate to="/profile/setup" replace />
 
-  return children
+  return <Outlet />
 }

@@ -3,7 +3,8 @@ import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import Input from '../components/Input'
 import Button from '../components/Button'
-import { Eye, EyeOff } from 'lucide-react' // 👁️ 아이콘 추가
+import Header from '../components/Layout/Header' // ✅ 헤더 추가
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -50,86 +51,89 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
-        <h2 className="text-2xl font-bold text-center mb-6 text-text-primary">
-          회원가입
-        </h2>
+    <div className="min-h-screen bg-background">
+      <Header /> {/* ✅ 헤더 삽입 */}
+      <div className="flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200 mt-12">
+          <h2 className="text-2xl font-bold text-center mb-6 text-text-primary">
+            회원가입
+          </h2>
 
-        <div className="space-y-4">
-          <Input
-            label="이메일"
-            type="email"
-            value={email}
-            setValue={setEmail}
-            placeholder="you@example.com"
-          />
-          <Input
-            label="비밀번호"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            setValue={setPassword}
-            placeholder="••••••••"
-            rightElement={
-              showPassword ? (
-                <EyeOff
-                  size={18}
-                  onClick={() => setShowPassword(false)}
-                  className="text-gray-500 cursor-pointer hover:text-gray-700"
-                />
-              ) : (
-                <Eye
-                  size={18}
-                  onClick={() => setShowPassword(true)}
-                  className="text-gray-500 cursor-pointer hover:text-gray-700"
-                />
-              )
-            }
-          />
-          <Input
-            label="비밀번호 확인"
-            type={showConfirmPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            setValue={setConfirmPassword}
-            placeholder="••••••••"
-            rightElement={
-              showConfirmPassword ? (
-                <EyeOff
-                  size={18}
-                  onClick={() => setShowConfirmPassword(false)}
-                  className="text-gray-500 cursor-pointer hover:text-gray-700"
-                />
-              ) : (
-                <Eye
-                  size={18}
-                  onClick={() => setShowConfirmPassword(true)}
-                  className="text-gray-500 cursor-pointer hover:text-gray-700"
-                />
-              )
-            }
-          />
-        </div>
+          <div className="space-y-4">
+            <Input
+              label="이메일"
+              type="email"
+              value={email}
+              setValue={setEmail}
+              placeholder="you@example.com"
+            />
+            <Input
+              label="비밀번호"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              setValue={setPassword}
+              placeholder="••••••••"
+              rightElement={
+                showPassword ? (
+                  <EyeOff
+                    size={18}
+                    onClick={() => setShowPassword(false)}
+                    className="text-gray-500 cursor-pointer hover:text-gray-700"
+                  />
+                ) : (
+                  <Eye
+                    size={18}
+                    onClick={() => setShowPassword(true)}
+                    className="text-gray-500 cursor-pointer hover:text-gray-700"
+                  />
+                )
+              }
+            />
+            <Input
+              label="비밀번호 확인"
+              type={showConfirmPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              setValue={setConfirmPassword}
+              placeholder="••••••••"
+              rightElement={
+                showConfirmPassword ? (
+                  <EyeOff
+                    size={18}
+                    onClick={() => setShowConfirmPassword(false)}
+                    className="text-gray-500 cursor-pointer hover:text-gray-700"
+                  />
+                ) : (
+                  <Eye
+                    size={18}
+                    onClick={() => setShowConfirmPassword(true)}
+                    className="text-gray-500 cursor-pointer hover:text-gray-700"
+                  />
+                )
+              }
+            />
+          </div>
 
-        {error && <p className="mt-4 text-danger text-sm text-center">{error}</p>}
-        {message && (
-          <p className="mt-4 text-green-600 text-sm text-center whitespace-pre-line">
-            {message}
+          {error && <p className="mt-4 text-danger text-sm text-center">{error}</p>}
+          {message && (
+            <p className="mt-4 text-green-600 text-sm text-center whitespace-pre-line">
+              {message}
+            </p>
+          )}
+
+          <Button onClick={handleSignup} disabled={loading} className="mt-6 w-full">
+            {loading ? '가입 중...' : '가입하기'}
+          </Button>
+
+          <p className="text-sm text-center mt-4 text-text-secondary">
+            이미 계정이 있나요?{' '}
+            <span
+              onClick={() => navigate('/login')}
+              className="text-brand cursor-pointer hover:underline"
+            >
+              로그인
+            </span>
           </p>
-        )}
-
-        <Button onClick={handleSignup} disabled={loading} className="mt-6 w-full">
-          {loading ? '가입 중...' : '가입하기'}
-        </Button>
-
-        <p className="text-sm text-center mt-4 text-text-secondary">
-          이미 계정이 있나요?{' '}
-          <span
-            onClick={() => navigate('/login')}
-            className="text-brand cursor-pointer hover:underline"
-          >
-            로그인
-          </span>
-        </p>
+        </div>
       </div>
     </div>
   )

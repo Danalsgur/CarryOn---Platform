@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: sessionData } = await supabase.auth.getSession()
       let sessionUser = sessionData.session?.user ?? null
 
+      // 🔄 세션 없으면 getUser로 보정 시도
       if (!sessionUser && sessionData.session) {
         const { data: userData, error } = await supabase.auth.getUser()
         if (error) console.error('🛠 getUser error:', error)
@@ -48,11 +49,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(sessionUser)
 
-      if (sessionUser) {
+      if (!sessionUser) {
+        console.log('🚫 세션 없음 → 비로그인 사용자')
+        setProfile(null)
+        setLoading(false)
+        return
+      }
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', sessionUser.id)
+        .maybeSingle()
+
+      const isIncomplete =
+        !profileData?.name || !profileData?.nickname || !profileData?.phone
+
+      if (!profileData || isIncomplete) {
+        setProfile(null)
+        setLoading(false)
+        navigate('/profile/setup')
+        return
+      }
+
+      setProfile(profileData)
+      setLoading(false)
+    }
+
+    init()
+
+    // 🔄 auth 상태 변화 감지 (로그인/로그아웃 포함)
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('🔄 [onAuthStateChange] 감지됨:', event)
+        const currentUser = session?.user ?? null
+        setUser(currentUser)
+
+        if (!currentUser) {
+          console.log('🚪 로그아웃 또는 세션 만료 → 사용자 null')
+          setProfile(null)
+          setLoading(false)
+          return
+        }
+
         const { data: profileData } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', sessionUser.id)
+          .eq('id', currentUser.id)
           .maybeSingle()
 
         const isIncomplete =
@@ -63,52 +106,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
           navigate('/profile/setup')
           return
-        } else {
-          setProfile(profileData)
         }
+
+        setProfile(profileData)
+        setLoading(false)
       }
+    )
 
-      setLoading(false)
-
-      const { data: listener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          console.log('🔄 [onAuthStateChange] 감지됨:', event)
-          const currentUser = session?.user ?? null
-          setUser(currentUser)
-
-          if (currentUser) {
-            console.log('👤 [listener] 유저:', currentUser)
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', currentUser.id)
-              .maybeSingle()
-
-            const isIncomplete =
-              !profileData?.name || !profileData?.nickname || !profileData?.phone
-
-            if (!profileData || isIncomplete) {
-              setProfile(null)
-              setLoading(false)
-              navigate('/profile/setup')
-              return
-            } else {
-              setProfile(profileData)
-            }
-          } else {
-            setProfile(null)
-          }
-
-          setLoading(false)
-        }
-      )
-
-      return () => {
-        listener.subscription.unsubscribe()
-      }
+    return () => {
+      listener.subscription.unsubscribe()
     }
-
-    init()
   }, [navigate])
 
   const logout = async () => {

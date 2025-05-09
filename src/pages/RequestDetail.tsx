@@ -40,13 +40,7 @@ export default function RequestDetail() {
       setLoading(true)
 
       const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        navigate('/login')
-        return
-      }
-
-      const uid = user.id
+      const uid = user?.id ?? null
       setUserId(uid)
 
       const { data: req, error: reqError } = await supabase
@@ -61,27 +55,30 @@ export default function RequestDetail() {
       }
 
       setRequest(req as Request)
-      setIsOwner(req.buyer_id === uid)
 
-      const { data: trip } = await supabase
-        .from('trips')
-        .select('id')
-        .eq('user_id', uid)
-        .maybeSingle()
+      if (uid) {
+        setIsOwner(req.buyer_id === uid)
 
-      setHasTrip(!!trip)
+        const { data: trip } = await supabase
+          .from('trips')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle()
 
-      const { data: match } = await supabase
-        .from('matches')
-        .select('id, status')
-        .eq('request_id', id)
-        .eq('user_id', uid)
-        .maybeSingle()
+        setHasTrip(!!trip)
 
-      if (match && match.status !== 'cancelled') {
-        setMatchStatus(match.status)
-      } else {
-        setMatchStatus(null)
+        const { data: match } = await supabase
+          .from('matches')
+          .select('id, status')
+          .eq('request_id', id)
+          .eq('user_id', uid)
+          .maybeSingle()
+
+        if (match && match.status !== 'cancelled') {
+          setMatchStatus(match.status)
+        } else {
+          setMatchStatus(null)
+        }
       }
 
       setLoading(false)
@@ -195,24 +192,37 @@ export default function RequestDetail() {
         </div>
       )}
 
-      <div className="space-x-4 mt-6">
-        {matchStatus === 'pending' ? (
-          <>
-            <Button disabled>지원 완료</Button>
-            <Button variant="outline" onClick={handleCancel}>지원 취소</Button>
-          </>
-        ) : (
-          <Button onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
-        )}
+      {userId ? (
+        <div className="space-x-4 mt-6">
+          {matchStatus === 'pending' ? (
+            <>
+              <Button disabled>지원 완료</Button>
+              <Button variant="outline" onClick={handleCancel}>지원 취소</Button>
+            </>
+          ) : (
+            <Button onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
+          )}
 
-        <Button
-          variant="outline"
-          onClick={() => window.open(request.chat_url, '_blank')}
-          disabled={matchStatus !== 'pending' || !request.chat_url}
-        >
-          오픈채팅
-        </Button>
-      </div>
+          <Button
+            variant="outline"
+            onClick={() => window.open(request.chat_url, '_blank')}
+            disabled={matchStatus !== 'pending' || !request.chat_url}
+          >
+            오픈채팅
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-6 text-sm text-gray-500">
+          이 요청에 지원하려면{' '}
+          <span
+            className="underline cursor-pointer text-blue-600"
+            onClick={() => navigate('/login')}
+          >
+            로그인
+          </span>{' '}
+          해주세요.
+        </div>
+      )}
 
       {isOwner && (
         <div className="mt-10 text-sm text-blue-700 border-t pt-4">
