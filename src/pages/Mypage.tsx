@@ -1,11 +1,9 @@
-// 생략된 import 부분 유지
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 import { useAuth } from '../contexts/AuthContext'
 
-// 타입 정의 생략 없이 유지
 type MatchItem = {
   id: string
   status?: string
@@ -32,13 +30,18 @@ type Trip = {
   departure_date: string
   reservation_code?: string
   status: string
+  deleted?: boolean
   matches: MatchItem[]
 }
 
 export default function Mypage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const initialTab = tabParam === 'carrier' || tabParam === 'buyer' ? tabParam : null
+
   const { user, profile, logout } = useAuth()
-  const [tab, setTab] = useState<'buyer' | 'carrier' | null>(null)
+  const [tab, setTab] = useState<'buyer' | 'carrier' | null>(initialTab)
   const [requests, setRequests] = useState<Request[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
 
@@ -48,6 +51,7 @@ export default function Mypage() {
         .from('requests')
         .select('id, title, reward, currency, status, matches(id)')
         .eq('user_id', userId)
+        .eq('deleted', false)
         .order('created_at', { ascending: false })
 
       if (data) setRequests(data)
@@ -62,6 +66,7 @@ export default function Mypage() {
           departure_date,
           reservation_code,
           status,
+          deleted,
           matches (
             id,
             status,
@@ -74,6 +79,7 @@ export default function Mypage() {
           )
         `)
         .eq('user_id', userId)
+        .eq('deleted', false)
         .order('created_at', { ascending: false })
 
       if (data) {
@@ -98,7 +104,6 @@ export default function Mypage() {
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">마이페이지</h1>
 
-      {/* 유저 정보 카드 */}
       <div className="border rounded-md p-4 bg-gray-50 text-sm text-gray-700 space-y-1">
         <div><strong>이름:</strong> {profile?.name || '이름 없음'}</div>
         <div><strong>닉네임:</strong> {profile?.nickname || '닉네임 없음'}</div>
@@ -114,7 +119,6 @@ export default function Mypage() {
         </div>
       </div>
 
-      {/* 탭 선택 */}
       <div className="flex gap-2 border-b pb-2 mt-4">
         <button
           className={`px-3 py-1 rounded-t ${tab === 'buyer' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
@@ -214,20 +218,20 @@ export default function Mypage() {
                     size="sm"
                     variant="outline"
                     onClick={async () => {
-                      if (confirm('이 여정을 삭제하면 매칭 요청도 함께 삭제됩니다. 정말 삭제하시겠습니까?')) {
-                        const { error: matchDeleteError } = await supabase
+                      if (confirm('이 여정을 삭제하면 매칭 요청도 함께 취소됩니다. 정말 삭제하시겠습니까?')) {
+                        const { error: matchUpdateError } = await supabase
                           .from('matches')
-                          .delete()
+                          .update({ status: 'cancelled' })
                           .eq('trip_id', trip.id)
 
-                        if (matchDeleteError) {
-                          alert('매칭 삭제 실패: ' + matchDeleteError.message)
+                        if (matchUpdateError) {
+                          alert('매칭 상태 변경 실패: ' + matchUpdateError.message)
                           return
                         }
 
                         const { error: tripDeleteError } = await supabase
                           .from('trips')
-                          .update({ status: 'cancelled' })
+                          .update({ status: 'cancelled', deleted: true })
                           .eq('id', trip.id)
 
                         if (tripDeleteError) alert('여정 삭제 실패: ' + tripDeleteError.message)
@@ -249,7 +253,7 @@ export default function Mypage() {
                     <p className="text-sm text-gray-500">지원한 요청이 없습니다.</p>
                   ) : (
                     <ul className="space-y-1 text-sm font-medium text-blue-700">
-                      {trip.matches.map((m) => (
+                      {trip.matches.filter((m) => m.status !== 'cancelled').map((m) => (
                         <li
                           key={m.id}
                           className="px-3 py-2 rounded-md hover:bg-blue-50 hover:shadow-sm border transition cursor-pointer"
@@ -264,7 +268,7 @@ export default function Mypage() {
                             </span>
                           </div>
                           <div className="text-xs mt-1 text-gray-500">
-                            {m.status === 'pending' && '🟡 지원 대기중'}
+                            {m.status === 'pending' && '🟡 매칭 대기중'}
                             {m.status === 'accepted' && '🟢 수락됨'}
                             {m.status === 'cancelled' && '🔴 취소됨'}
                             {!m.status && '⏳ 상태 정보 없음'}

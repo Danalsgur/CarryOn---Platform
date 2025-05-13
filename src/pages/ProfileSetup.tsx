@@ -1,3 +1,5 @@
+// ✅ ProfileSetup.tsx (수정 전 원래 버전)
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
@@ -16,12 +18,12 @@ export default function ProfileSetup() {
 
   const handleSubmit = async () => {
     setError(null)
-  
+
     if (!name || !nickname || !phone) {
       setError('모든 정보를 입력해주세요.')
       return
     }
-  
+
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -31,7 +33,7 @@ export default function ProfileSetup() {
         country_code: 'KR',
       })
       .eq('id', user?.id)
-  
+
     if (error) {
       if (error.code === '23505' || error.message.includes('duplicate')) {
         setError('이미 사용 중인 닉네임입니다.')
@@ -54,7 +56,7 @@ export default function ProfileSetup() {
         navigate('/mypage')
       }, 0)
     }
-  }  
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

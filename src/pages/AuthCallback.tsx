@@ -1,3 +1,5 @@
+// ✅ AuthCallback.tsx (수정 전 원래 버전)
+
 import { useEffect } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'

@@ -11,17 +11,9 @@ function HeroSection() {
   const [showButtons, setShowButtons] = useState(false)
 
   useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setShowSecondLine(true)
-    }, 1000)
-
-    const timer2 = setTimeout(() => {
-      setSlideComplete(true)
-    }, 2500)
-
-    const timer3 = setTimeout(() => {
-      setShowButtons(true)
-    }, 3200)
+    const timer1 = setTimeout(() => setShowSecondLine(true), 1000)
+    const timer2 = setTimeout(() => setSlideComplete(true), 1300)
+    const timer3 = setTimeout(() => setShowButtons(true), 2000)
 
     return () => {
       clearTimeout(timer1)
@@ -31,30 +23,33 @@ function HeroSection() {
   }, [])
 
   return (
-    <section className="relative min-h-[80vh] flex flex-col justify-center items-center text-center bg-white px-4 py-24 overflow-hidden">
+    <section className="relative min-h-[73vh] bg-white px-4 pt-25 pb-0 overflow-hidden">
       {/* 문구 영역 */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 transition-transform duration-700 ease-in-out z-10"
-        style={{ transform: slideComplete ? 'translate(-50%, -200px)' : 'translate(-50%, -50%)' }}
+      <motion.div
+        initial={{ y: '-50%', x: '-50%' }}
+        animate={{ y: slideComplete ? '-250px' : '-50%', x: '-50%' }}
+        transition={{ duration: 0.9, ease: 'easeInOut' }}
+        className="absolute top-[67%] left-1/2 text-center z-10"
       >
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-blue-700 leading-tight mb-5">
+        <h1 className="text-5xl sm:text-6xl font-extrabold text-blue-700 leading-tight mb-3">
           <Typewriter
             words={['CarryOn']}
             loop={1}
             cursor={false}
-            typeSpeed={120}
+            typeSpeed={80}
           />
         </h1>
-        <p className="text-xl sm:text-2xl text-blue-700 mb-2">
+        <p className="text-base sm:text-lg text-blue-700">
           {showSecondLine && (
             <Typewriter
-              words={["여유 공간으로 이어지는 사람들"]}
+              words={['여유 공간으로 이어지는 사람들']}
               loop={1}
               cursor={false}
-              typeSpeed={80}
+              typeSpeed={40}
             />
           )}
         </p>
-      </div>
+      </motion.div>
 
       {/* 버튼 영역 */}
       <AnimatePresence>
@@ -63,14 +58,15 @@ function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="relative z-0 mt-52 flex flex-col items-center gap-6"
+            className="absolute top-[54%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-center z-0"
           >
-            <div className="text-center">
-              <p className="text-blue-800 font-semibold text-base mb-2">
+            <div>
+              <p className="text-blue-800 font-semibold text-base mb-1">
                 여행 준비 중이신가요?
               </p>
               <p className="text-base text-gray-700">
-                CarryOn에 여정을 등록하고 <span className="text-blue-600 font-semibold">캐리어</span>로 활동해보세요.
+                CarryOn에 여정을 등록하고{' '}
+                <span className="text-blue-600 font-semibold">캐리어</span>로 활동해보세요.
               </p>
             </div>
 

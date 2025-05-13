@@ -1,7 +1,13 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { supabase } from '../supabase'
 import { User } from '@supabase/supabase-js'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 // 🔄 Profile 타입 정의
 type Profile = {
@@ -28,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const location = useLocation()
   const hasRun = useRef(false)
 
   useEffect(() => {
@@ -68,7 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!profileData || isIncomplete) {
         setProfile(null)
         setLoading(false)
-        navigate('/profile/setup')
+
+        // ✅ 현재 경로가 아닐 때만 이동
+        if (location.pathname !== '/profile/setup') {
+          navigate('/profile/setup')
+        }
+
         return
       }
 
@@ -104,7 +116,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!profileData || isIncomplete) {
           setProfile(null)
           setLoading(false)
-          navigate('/profile/setup')
+
+          // ✅ 현재 경로가 아닐 때만 이동
+          if (location.pathname !== '/profile/setup') {
+            navigate('/profile/setup')
+          }
+
           return
         }
 
@@ -116,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       listener.subscription.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, location])
 
   const logout = async () => {
     console.log('👋 로그아웃 시도됨')
@@ -127,7 +144,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, logout, setProfile }}>
+    <AuthContext.Provider
+      value={{ user, profile, loading, logout, setProfile }}
+    >
       {children}
     </AuthContext.Provider>
   )

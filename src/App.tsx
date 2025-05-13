@@ -16,8 +16,11 @@ import RequestEdit from './pages/RequestEdit'
 import TripNew from './pages/TripNew'
 import TripEdit from './pages/TripEdit'
 
+// ✅ 새로 추가
+import ResetPasswordRequest from './pages/ResetPasswordRequest'
+import ResetPasswordUpdate from './pages/ResetPasswordUpdate'
+
 function App() {
-  // 🔄 탭 포커스 복귀 시 새로고침
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -38,6 +41,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/reset-password" element={<ResetPasswordRequest />} />         {/* ✅ 추가 */}
+      <Route path="/reset-password/update" element={<ResetPasswordUpdate />} />   {/* ✅ 추가 */}
 
       {/* ✅ Layout 적용되는 라우트들 */}
       <Route element={<Layout />}>

@@ -81,6 +81,17 @@ export default function Login() {
               회원가입
             </span>
           </div>
+
+{/* ✅ 추가된 '비밀번호 재설정' 링크 */}
+<div className="mt-2 text-sm text-center text-text-secondary">
+  비밀번호를 잊으셨나요?{' '}
+  <span
+    onClick={() => navigate('/reset-password')}
+    className="text-brand hover:underline cursor-pointer font-medium"
+  >
+    재설정하기
+  </span>
+</div>
         </div>
       </div>
     </div>
