@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 
@@ -27,6 +27,7 @@ type Request = {
 export default function RequestDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation() // ✅ 현재 경로 파악용
 
   const [request, setRequest] = useState<Request | null>(null)
   const [loading, setLoading] = useState(true)
@@ -63,6 +64,8 @@ export default function RequestDetail() {
           .from('trips')
           .select('id')
           .eq('user_id', uid)
+          .eq('deleted', false)
+          .not('status', 'eq', 'cancelled')
           .maybeSingle()
 
         setHasTrip(!!trip)
@@ -100,6 +103,8 @@ export default function RequestDetail() {
       .from('trips')
       .select('id')
       .eq('user_id', userId)
+      .eq('deleted', false)
+      .not('status', 'eq', 'cancelled')
       .limit(1)
       .single()
 
@@ -167,14 +172,17 @@ export default function RequestDetail() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-text-primary">{request.title}</h1>
-      <p className="text-sm text-gray-600">도시: {request.destination_city}</p>
-      <p className="text-sm text-gray-600">수고비: {request.reward.toLocaleString()} {request.currency}</p>
-      <p className="text-sm text-gray-600">수령 기간: {request.receive_start} ~ {request.receive_end}</p>
+      {/* 타이틀 & 요약 */}
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold text-text-primary">{request.title}</h1>
+        <div className="text-sm text-gray-600">{request.destination_city} | 수고비: {request.reward.toLocaleString()} {request.currency}</div>
+        <div className="text-sm text-gray-500">수령 기간: {request.receive_start} ~ {request.receive_end}</div>
+      </div>
 
-      <div>
-        <h3 className="font-semibold mt-4 mb-2">요청 품목</h3>
-        <ul className="list-disc ml-4 space-y-1 text-sm text-gray-700">
+      {/* 품목 카드 */}
+      <div className="p-4 bg-gray-50 border rounded-md">
+        <h3 className="font-semibold mb-2 text-text-primary">요청 품목</h3>
+        <ul className="list-disc ml-5 space-y-1 text-sm text-gray-700">
           {request.items.map((item, i) => (
             <li key={i}>
               {item.name} - {item.price.toLocaleString()}원
@@ -185,25 +193,28 @@ export default function RequestDetail() {
         </ul>
       </div>
 
+      {/* 설명 */}
       {request.description && (
-        <div>
-          <h3 className="font-semibold mt-4 mb-1">요청 설명</h3>
+        <div className="p-4 bg-white border rounded-md">
+          <h3 className="font-semibold mb-2 text-text-primary">요청 설명</h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{request.description}</p>
         </div>
       )}
 
+      {/* 액션 버튼 */}
       {userId ? (
-        <div className="space-x-4 mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
           {matchStatus === 'pending' ? (
             <>
-              <Button disabled>지원 완료</Button>
-              <Button variant="outline" onClick={handleCancel}>지원 취소</Button>
+              <Button className="w-full sm:w-auto" disabled>지원 완료</Button>
+              <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>지원 취소</Button>
             </>
           ) : (
-            <Button onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
+            <Button className="w-full sm:w-auto" onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
           )}
 
           <Button
+            className="w-full sm:w-auto"
             variant="outline"
             onClick={() => window.open(request.chat_url, '_blank')}
             disabled={matchStatus !== 'pending' || !request.chat_url}
@@ -216,7 +227,7 @@ export default function RequestDetail() {
           이 요청에 지원하려면{' '}
           <span
             className="underline cursor-pointer text-blue-600"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
           >
             로그인
           </span>{' '}
@@ -224,6 +235,7 @@ export default function RequestDetail() {
         </div>
       )}
 
+      {/* 작성자 알림 */}
       {isOwner && (
         <div className="mt-10 text-sm text-blue-700 border-t pt-4">
           이 요청은 내가 등록한 거예요. 매칭 확정 기능은 곧 추가됩니다.

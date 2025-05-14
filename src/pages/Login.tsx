@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import GoogleIcon from '../components/GoogleIcon'
-import Header from '../components/Layout/Header' // ✅ 헤더 추가
+import Header from '../components/Layout/Header'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -11,6 +11,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
 
   const handleLogin = async () => {
+    console.log('🟡 handleLogin 호출됨')
     setError(null)
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -18,11 +19,14 @@ export default function Login() {
       password,
     })
 
+    console.log('🔎 로그인 결과:', data)
+    console.log('🧪 세션 여부:', data.session ? '✅ 있음' : '❌ 없음')
+
     if (error) {
       setError(error.message)
     } else {
       console.log('✅ Logged in user:', data.user)
-      navigate('/mypage')
+      window.location.href = '/' // ✅ 항상 홈으로 이동
     }
   }
 
@@ -41,7 +45,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header /> {/* ✅ 헤더 삽입 */}
+      <Header />
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200 mt-12">
           <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">로그인</h2>
@@ -82,16 +86,15 @@ export default function Login() {
             </span>
           </div>
 
-{/* ✅ 추가된 '비밀번호 재설정' 링크 */}
-<div className="mt-2 text-sm text-center text-text-secondary">
-  비밀번호를 잊으셨나요?{' '}
-  <span
-    onClick={() => navigate('/reset-password')}
-    className="text-brand hover:underline cursor-pointer font-medium"
-  >
-    재설정하기
-  </span>
-</div>
+          <div className="mt-2 text-sm text-center text-text-secondary">
+            비밀번호를 잊으셨나요?{' '}
+            <span
+              onClick={() => navigate('/reset-password')}
+              className="text-brand hover:underline cursor-pointer font-medium"
+            >
+              재설정하기
+            </span>
+          </div>
         </div>
       </div>
     </div>

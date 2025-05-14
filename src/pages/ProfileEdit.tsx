@@ -1,22 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Input from '../components/Input'
 import Button from '../components/Button'
 
-export default function ProfileSetup() {
+export default function ProfileEdit() {
   const navigate = useNavigate()
-  const { user, setProfile, loading } = useAuth()
+  const { user, profile, setProfile, loading } = useAuth()
 
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-
-  console.log('[ProfileSetup] 진입', { user, loading })
-
+  useEffect(() => {
+    if (profile) {
+      setName(profile.name || '')
+      setNickname(profile.nickname || '')
+      setPhone(profile.phone || '')
+    }
+  }, [profile])
 
   if (loading) {
     return (
@@ -48,7 +52,6 @@ export default function ProfileSetup() {
         name,
         nickname,
         phone,
-        country_code: 'KR',
       })
       .eq('id', user.id)
 
@@ -59,28 +62,22 @@ export default function ProfileSetup() {
         setError(`프로필 저장 실패: ${error.message}`)
       }
     } else {
-      const updatedProfile = {
-        id: user.id,
-        name,
-        nickname,
-        phone,
-        country_code: 'KR',
-      }
+        setProfile({
+            id: user.id as string,
+            name,
+            nickname,
+            phone,
+            country_code: 'KR',
+          })
 
-      setProfile(updatedProfile)
-
-      setTimeout(() => {
-        navigate('/mypage')
-      }, 0)
+      navigate('/mypage')
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
-        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">
-          추가 정보 입력
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">프로필 수정</h2>
 
         <div className="space-y-4">
           <Input label="이름" value={name} setValue={setName} />
@@ -91,7 +88,7 @@ export default function ProfileSetup() {
         {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
 
         <Button onClick={handleSubmit} className="mt-6 w-full">
-          저장하고 시작하기
+          저장
         </Button>
       </div>
     </div>

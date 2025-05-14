@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
-import { useAuth } from '../contexts/AuthContext'
+import { Pencil } from 'lucide-react'
 
 type MatchItem = {
   id: string
@@ -38,10 +39,10 @@ export default function Mypage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const initialTab = tabParam === 'carrier' || tabParam === 'buyer' ? tabParam : null
+  const initialTab = tabParam === 'carrier' || tabParam === 'buyer' ? tabParam : 'buyer' // ✅ 기본값 지정
 
-  const { user, profile, logout } = useAuth()
-  const [tab, setTab] = useState<'buyer' | 'carrier' | null>(initialTab)
+  const { user, profile, loading } = useAuth()
+  const [tab, setTab] = useState<'buyer' | 'carrier'>(initialTab)
   const [requests, setRequests] = useState<Request[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
 
@@ -100,11 +101,20 @@ export default function Mypage() {
     fetchData(tab, user.id)
   }, [tab, user?.id])
 
+  // ✅ 세션 or 프로필 로딩 중
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center text-gray-500">
+        마이페이지 불러오는 중...
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">마이페이지</h1>
 
-      <div className="border rounded-md p-4 bg-gray-50 text-sm text-gray-700 space-y-1">
+      <div className="relative border rounded-md p-4 bg-gray-50 text-sm text-gray-700 space-y-1">
         <div><strong>이름:</strong> {profile?.name || '이름 없음'}</div>
         <div><strong>닉네임:</strong> {profile?.nickname || '닉네임 없음'}</div>
         <div><strong>이메일:</strong> {user?.email}</div>
@@ -114,9 +124,13 @@ export default function Mypage() {
             ? new Date(user.created_at).toLocaleDateString('ko-KR')
             : '정보 없음'}
         </div>
-        <div className="pt-2">
-          <Button variant="outline" size="sm" onClick={logout}>로그아웃</Button>
-        </div>
+        <button
+          onClick={() => navigate('/profile/edit')}
+          className="absolute top-2 right-2 text-gray-400 hover:text-blue-600"
+          aria-label="프로필 수정"
+        >
+          <Pencil size={16} />
+        </button>
       </div>
 
       <div className="flex gap-2 border-b pb-2 mt-4">
@@ -134,50 +148,21 @@ export default function Mypage() {
         </button>
       </div>
 
-      {tab === null && (
-        <p className="text-sm text-gray-500 pt-4">탭을 선택해주세요.</p>
-      )}
-
       {tab === 'buyer' && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-blue-700">내가 올린 요청</h2>
           {requests.length === 0 && <p className="text-sm text-gray-500">아직 등록한 요청이 없습니다.</p>}
           {requests.map((r) => (
-            <div key={r.id} className="p-4 border rounded-lg shadow-sm space-y-1">
+            <div
+              key={r.id}
+              className="p-4 border rounded-lg shadow-sm space-y-1 cursor-pointer hover:bg-gray-50"
+              onClick={() => navigate(`/request/manage/${r.id}`)}
+            >
               <div className="font-bold">{r.title}</div>
               <div className="text-sm text-gray-600">
                 {r.reward.toLocaleString()} {r.currency}
               </div>
               <div className="text-sm text-gray-400">상태: {r.status ?? '대기중'}</div>
-
-              <div className="flex gap-2 mt-3">
-                {r.matches.length === 0 && (
-                  <Button size="sm" onClick={() => navigate(`/request/edit/${r.id}`)}>수정</Button>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={async () => {
-                    if (confirm('정말 삭제하시겠습니까?')) {
-                      const { error } = await supabase
-                        .from('requests')
-                        .update({ deleted: true })
-                        .eq('id', r.id)
-                      if (error) alert(error.message)
-                      else location.reload()
-                    }
-                  }}
-                >
-                  삭제
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => alert(`🛠 지원자 보기: request_id=${r.id}`)}
-                >
-                  지원자 보기
-                </Button>
-              </div>
             </div>
           ))}
         </div>
@@ -189,7 +174,7 @@ export default function Mypage() {
           {trips.length === 0 && <p className="text-sm text-gray-500">등록한 여정이 없습니다.</p>}
           {trips.map((trip) => {
             const isPast = new Date(trip.departure_date) < new Date()
-            const hasMatch = trip.matches?.length > 0
+            const hasMatch = trip.matches?.some((m) => m.status !== 'cancelled')
             const displayStatus =
               trip.status === 'cancelled'
                 ? '취소됨'
@@ -214,70 +199,11 @@ export default function Mypage() {
                   >
                     수정
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={async () => {
-                      if (confirm('이 여정을 삭제하면 매칭 요청도 함께 취소됩니다. 정말 삭제하시겠습니까?')) {
-                        const { error: matchUpdateError } = await supabase
-                          .from('matches')
-                          .update({ status: 'cancelled' })
-                          .eq('trip_id', trip.id)
-
-                        if (matchUpdateError) {
-                          alert('매칭 상태 변경 실패: ' + matchUpdateError.message)
-                          return
-                        }
-
-                        const { error: tripDeleteError } = await supabase
-                          .from('trips')
-                          .update({ status: 'cancelled', deleted: true })
-                          .eq('id', trip.id)
-
-                        if (tripDeleteError) alert('여정 삭제 실패: ' + tripDeleteError.message)
-                        else location.reload()
-                      }
-                    }}
-                  >
-                    삭제
-                  </Button>
                 </div>
 
                 {hasMatch && (
                   <p className="text-xs text-red-500 mt-1">※ 매칭 요청이 있어 수정할 수 없습니다.</p>
                 )}
-
-                <div className="bg-gray-50 rounded-md p-3 border mt-3">
-                  <h4 className="text-sm font-semibold mb-2 text-gray-700">지원한 요청 목록</h4>
-                  {trip.matches.length === 0 ? (
-                    <p className="text-sm text-gray-500">지원한 요청이 없습니다.</p>
-                  ) : (
-                    <ul className="space-y-1 text-sm font-medium text-blue-700">
-                      {trip.matches.filter((m) => m.status !== 'cancelled').map((m) => (
-                        <li
-                          key={m.id}
-                          className="px-3 py-2 rounded-md hover:bg-blue-50 hover:shadow-sm border transition cursor-pointer"
-                          onClick={() => {
-                            if (m.request?.id) navigate(`/request/${m.request.id}`)
-                          }}
-                        >
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-text-primary">{m.request?.title}</span>
-                            <span className="text-sm text-gray-500">
-                              {m.request?.reward?.toLocaleString()} {m.request?.currency}
-                            </span>
-                          </div>
-                          <div className="text-xs mt-1 text-gray-500">
-                            {m.status === 'pending' && '🟡 매칭 대기중'}
-                            {m.status === 'accepted' && '🟢 수락됨'}
-                            {m.status === 'cancelled' && '🔴 취소됨'}
-                            {!m.status && '⏳ 상태 정보 없음'}
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
               </div>
             )
           })}

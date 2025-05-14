@@ -1,9 +1,20 @@
-// src/pages/RequestList.tsx
-
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+
+type RawRequest = {
+  id: string
+  title: string
+  destination_city: string
+  reward: number
+  currency: string
+  receive_start: string
+  receive_end: string
+  status: string
+  user_id: string
+  profiles: { nickname: string }[] | null
+}
 
 type Request = {
   id: string
@@ -14,6 +25,8 @@ type Request = {
   receive_start: string
   receive_end: string
   status: string
+  user_id: string
+  profiles: { nickname: string } | null
 }
 
 export default function RequestList() {
@@ -33,7 +46,20 @@ export default function RequestList() {
 
       let query = supabase
         .from('requests')
-        .select('*')
+        .select(`
+          id,
+          title,
+          destination_city,
+          reward,
+          currency,
+          receive_start,
+          receive_end,
+          status,
+          user_id,
+          profiles:profiles!user_id (
+            nickname
+          )
+        `)
         .eq('deleted', false)
 
       if (!showCompleted) {
@@ -45,10 +71,23 @@ export default function RequestList() {
       if (error) {
         console.error('❌ 요청 불러오기 실패:', error.message)
       } else {
-        let result = data as Request[]
+        console.log('🔍 Supabase 응답 확인:', data)
+
+        data.forEach((item, index) => {
+          console.log(`🧩 [${index}] 요청 ID: ${item.id}`)
+          console.log(`    └ user_id: ${item.user_id}`)
+          console.log(`    └ profiles:`, item.profiles)
+        })
+
+        const result = (data as RawRequest[]).map((item): Request => ({
+          ...item,
+          profiles: Array.isArray(item.profiles)
+            ? item.profiles[0] ?? null
+            : item.profiles ?? null,
+        }))
 
         if (sortByReward) {
-          result = result.sort((a, b) => b.reward - a.reward)
+          result.sort((a, b) => b.reward - a.reward)
         }
 
         setRequests(result)
@@ -102,6 +141,9 @@ export default function RequestList() {
                   {req.reward.toLocaleString()} {req.currency}
                 </span>
               </div>
+              <p className="text-sm text-gray-500">
+                닉네임: {req.profiles?.nickname ?? '알 수 없음'}
+              </p>
               <p className="text-sm text-gray-600 mt-1">도시: {req.destination_city}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {req.receive_start} ~ {req.receive_end}

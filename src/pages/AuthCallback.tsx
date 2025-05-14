@@ -1,5 +1,3 @@
-// ✅ AuthCallback.tsx (수정 전 원래 버전)
-
 import { useEffect } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
@@ -17,8 +15,8 @@ export default function AuthCallback() {
         return
       }
 
-      // ✅ 자동 로그인 완료 → 마이페이지 이동
-      navigate('/mypage')
+      // ✅ 자동 로그인 완료 → 홈으로 이동
+      navigate('/')
     }
 
     handleAuth()

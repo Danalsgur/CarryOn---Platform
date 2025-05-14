@@ -4,12 +4,12 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from 'react'
 import { supabase } from '../supabase'
 import { User } from '@supabase/supabase-js'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
-// 🔄 Profile 타입 정의
 type Profile = {
   id: string
   name: string
@@ -18,7 +18,6 @@ type Profile = {
   country_code: string
 }
 
-// 🔄 Context 타입 정의
 type AuthContextType = {
   user: User | null
   profile: Profile | null
@@ -34,113 +33,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const location = useLocation()
   const hasRun = useRef(false)
 
+  // ✅ init 함수 외부로 분리 (재사용 가능)
+  const init = useCallback(async () => {
+    console.log('🔁 [init] 세션 복구 시작')
+
+    const { data: sessionData } = await supabase.auth.getSession()
+    let sessionUser = sessionData.session?.user ?? null
+
+    if (!sessionUser && sessionData.session) {
+      const { data: userData, error } = await supabase.auth.getUser()
+      if (error) console.error('🛠 getUser error:', error)
+      sessionUser = userData.user
+    }
+
+    setUser(sessionUser)
+
+    if (!sessionUser) {
+      console.log('🚫 세션 없음 → 비로그인 사용자')
+      setProfile(null)
+      setLoading(false)
+      return
+    }
+
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', sessionUser.id)
+      .maybeSingle()
+
+    const isIncomplete =
+      !profileData?.name || !profileData?.nickname || !profileData?.phone
+
+    if (!profileData || isIncomplete) {
+      setProfile(null)
+      setLoading(false)
+      setTimeout(() => {
+        navigate('/profile/setup')
+      }, 0)
+      return
+    }
+
+    setProfile(profileData)
+    setLoading(false)
+  }, [navigate])
+
+  // ✅ 마운트 시 init 실행 + onAuthStateChange 등록
   useEffect(() => {
     if (hasRun.current) return
     hasRun.current = true
 
-    const init = async () => {
-      console.log('🔁 [init] 세션 복구 시작')
-
-      const { data: sessionData } = await supabase.auth.getSession()
-      let sessionUser = sessionData.session?.user ?? null
-
-      // 🔄 세션 없으면 getUser로 보정 시도
-      if (!sessionUser && sessionData.session) {
-        const { data: userData, error } = await supabase.auth.getUser()
-        if (error) console.error('🛠 getUser error:', error)
-        sessionUser = userData.user
-      }
-
-      setUser(sessionUser)
-
-      if (!sessionUser) {
-        console.log('🚫 세션 없음 → 비로그인 사용자')
-        setProfile(null)
-        setLoading(false)
-        return
-      }
-
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', sessionUser.id)
-        .maybeSingle()
-
-      const isIncomplete =
-        !profileData?.name || !profileData?.nickname || !profileData?.phone
-
-      if (!profileData || isIncomplete) {
-        setProfile(null)
-        setLoading(false)
-
-        // ✅ 현재 경로가 아닐 때만 이동
-        if (location.pathname !== '/profile/setup') {
-          navigate('/profile/setup')
-        }
-
-        return
-      }
-
-      setProfile(profileData)
-      setLoading(false)
-    }
-
     init()
 
-    // 🔄 auth 상태 변화 감지 (로그인/로그아웃 포함)
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event) => {
         console.log('🔄 [onAuthStateChange] 감지됨:', event)
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-
-        if (!currentUser) {
-          console.log('🚪 로그아웃 또는 세션 만료 → 사용자 null')
-          setProfile(null)
-          setLoading(false)
-          return
-        }
-
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', currentUser.id)
-          .maybeSingle()
-
-        const isIncomplete =
-          !profileData?.name || !profileData?.nickname || !profileData?.phone
-
-        if (!profileData || isIncomplete) {
-          setProfile(null)
-          setLoading(false)
-
-          // ✅ 현재 경로가 아닐 때만 이동
-          if (location.pathname !== '/profile/setup') {
-            navigate('/profile/setup')
-          }
-
-          return
-        }
-
-        setProfile(profileData)
-        setLoading(false)
+        init()
       }
     )
 
     return () => {
       listener.subscription.unsubscribe()
     }
-  }, [navigate, location])
+  }, [init])
+
+  // ✅ 탭 복귀 시에도 세션/프로필 재확인
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('👁️‍🗨️ 탭 복귀 → 세션 재확인')
+        init()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [init])
 
   const logout = async () => {
     console.log('👋 로그아웃 시도됨')
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
-    window.location.href = '/login'
+    console.log('🌐 브라우저 이동 시도함')
+    window.location.href = '/'
   }
 
   return (
