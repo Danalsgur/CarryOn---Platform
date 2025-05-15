@@ -27,7 +27,7 @@ type Request = {
 export default function RequestDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const location = useLocation() // ✅ 현재 경로 파악용
+  const location = useLocation()
 
   const [request, setRequest] = useState<Request | null>(null)
   const [loading, setLoading] = useState(true)
@@ -210,7 +210,9 @@ export default function RequestDetail() {
               <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>지원 취소</Button>
             </>
           ) : (
-            <Button className="w-full sm:w-auto" onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
+            <Button className="w-full sm:w-auto" onClick={handleApply}>
+              맡을게요
+            </Button>
           )}
 
           <Button
@@ -231,6 +233,20 @@ export default function RequestDetail() {
           >
             로그인
           </span>{' '}
+          해주세요.
+        </div>
+      )}
+
+      {/* 여정 미등록 시 안내문 */}
+      {userId && matchStatus === null && !hasTrip && (
+        <div className="mt-2 text-sm text-gray-500">
+          이 요청을 맡으려면 먼저{' '}
+          <span
+            className="underline text-blue-600 cursor-pointer"
+            onClick={() => navigate('/trip/new')}
+          >
+            여정을 등록
+          </span>
           해주세요.
         </div>
       )}

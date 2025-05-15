@@ -95,16 +95,30 @@ export default function RequestManage() {
   }, [id, user, navigate])
 
   const handleAccept = async (selectedId: string) => {
-    const updates = matches.map((m) => ({
-      id: m.id,
-      status: m.id === selectedId ? 'accepted' : 'rejected',
-    }))
+    const selectedMatch = matches.find((m) => m.id === selectedId)
 
-    const { error } = await supabase
+    if (!selectedMatch) return
+
+    // 1. 선택된 캐리어: accepted
+    const { error: acceptError } = await supabase
       .from('matches')
-      .upsert(updates, { onConflict: 'id' })
+      .update({ status: 'accepted' })
+      .eq('id', selectedId)
 
-    if (!error) {
+    // 2. 나머지 캐리어들: rejected
+    const rejectedIds = matches.filter((m) => m.id !== selectedId).map((m) => m.id)
+    const { error: rejectError } = await supabase
+      .from('matches')
+      .update({ status: 'rejected' })
+      .in('id', rejectedIds)
+
+    // 3. 요청 상태 matched로 변경
+    const { error: requestError } = await supabase
+      .from('requests')
+      .update({ status: 'matched' })
+      .eq('id', request?.id)
+
+    if (!acceptError && !rejectError && !requestError) {
       setMatches((prev) =>
         prev.map((m) => ({
           ...m,
@@ -181,7 +195,7 @@ export default function RequestManage() {
                   {m.profiles?.nickname ?? '알 수 없음'}
                 </a>
               </p>
-              <p><strong>비행일:</strong> {m.trip?.departure_date ? dayjs(m.trip.departure_date).format('YYYY-MM-DD') : '정보 없음'}</p>
+              <p><strong>출국일:</strong> {m.trip?.departure_date ? dayjs(m.trip.departure_date).format('YYYY-MM-DD') : '정보 없음'}</p>
               <p><strong>매칭 시간:</strong> {dayjs(m.created_at).format('YYYY-MM-DD HH:mm')}</p>
             </div>
             <button
