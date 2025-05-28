@@ -5,31 +5,48 @@ import {
   useRef,
   useState,
   useCallback,
+  ReactNode,
 } from 'react'
 import { supabase } from '../supabase'
 import { User } from '@supabase/supabase-js'
 import { useNavigate } from 'react-router-dom'
+import { auth } from '@/utils/firebase'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup
+} from 'firebase/auth'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { db } from '@/utils/firebase'
+import { User as FirebaseUser } from 'firebase/auth'
 
-type Profile = {
-  id: string
-  name: string
+interface Profile {
   nickname: string
-  phone: string
-  country_code: string
+  phoneNumber: string
+  role: 'buyer' | 'carrier' | 'both'
 }
 
-type AuthContextType = {
-  user: User | null
+interface AuthContextType {
+  user: FirebaseUser | null
   profile: Profile | null
   loading: boolean
+  login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: () => Promise<void>
+  loginWithGithub: () => Promise<void>
+  signup: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
-  setProfile: (p: Profile | null) => void
+  updateProfile: (profile: Partial<Profile>) => Promise<void>
+  resetPassword: (email: string) => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | null>(null)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<FirebaseUser | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -48,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sessionUser = userData.user
     }
 
-    setUser(sessionUser)
+    setUser(sessionUser as unknown as FirebaseUser | null)
 
     if (!sessionUser) {
       console.log('🚫 세션 없음 → 비로그인 사용자')
@@ -113,6 +130,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [init])
 
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password)
+  }
+
+  const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    const { user } = await signInWithPopup(auth, provider)
+    const profileDoc = await getDoc(doc(db, 'users', user.uid))
+    if (!profileDoc.exists()) {
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        createdAt: new Date().toISOString()
+      })
+    }
+  }
+
+  const loginWithGithub = async () => {
+    const provider = new GithubAuthProvider()
+    const { user } = await signInWithPopup(auth, provider)
+    const profileDoc = await getDoc(doc(db, 'users', user.uid))
+    if (!profileDoc.exists()) {
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        createdAt: new Date().toISOString()
+      })
+    }
+  }
+
+  const signup = async (email: string, password: string) => {
+    const { user } = await createUserWithEmailAndPassword(auth, email, password)
+    await setDoc(doc(db, 'users', user.uid), {
+      email: user.email,
+      createdAt: new Date().toISOString()
+    })
+  }
+
   const logout = async () => {
     console.log('👋 로그아웃 시도됨')
     await supabase.auth.signOut()
@@ -122,9 +175,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/'
   }
 
+  const updateProfile = async (newProfile: Partial<Profile>) => {
+    if (!user) return
+    await setDoc(doc(db, 'users', user.uid), newProfile, { merge: true })
+    setProfile(prev => prev ? { ...prev, ...newProfile } : null)
+  }
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email)
+  }
+
   return (
     <AuthContext.Provider
-      value={{ user, profile, loading, logout, setProfile }}
+      value={{
+        user,
+        profile,
+        loading,
+        login,
+        loginWithGoogle,
+        loginWithGithub,
+        signup,
+        logout,
+        updateProfile,
+        resetPassword
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -133,6 +207,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within an AuthProvider')
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
   return context
 }

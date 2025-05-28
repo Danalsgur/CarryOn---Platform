@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Input from '../components/Input'
-import Button from '../components/Button'
+import Button from '../components/ui/Button'
 
 const DESTINATIONS = ['런던', '뉴욕', '파리']
 

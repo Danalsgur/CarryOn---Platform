@@ -1,22 +1,24 @@
-import { ButtonHTMLAttributes, forwardRef } from 'react';
-import clsx from 'clsx';
+// src/components/Button.tsx
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'outline';
-  isLoading?: boolean;
+import { forwardRef } from 'react'
+import clsx from 'clsx'
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  size?: 'sm' | 'md' | 'lg'
+  variant?: 'default' | 'outline'
+  isLoading?: boolean
 }
 
 const sizeClasses = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-base',
   lg: 'px-6 py-3 text-lg',
-};
+}
 
 const variantClasses = {
   default: 'bg-blue-600 text-white hover:bg-blue-700',
   outline: 'border border-blue-600 text-blue-600 bg-white hover:bg-blue-50',
-};
+}
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -37,6 +39,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       {isLoading ? '로딩...' : children}
     </button>
   )
-);
+)
 
-export default Button; 
+Button.displayName = 'Button'
+
+export default Button
