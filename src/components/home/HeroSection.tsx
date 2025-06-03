@@ -3,6 +3,7 @@ import Button from '../../components/Button'
 import { useEffect, useState } from 'react'
 import { Typewriter } from 'react-simple-typewriter'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Plane, Package, ArrowRight } from 'lucide-react'
 
 function HeroSection() {
   const navigate = useNavigate()
@@ -61,21 +62,32 @@ function HeroSection() {
             className="absolute top-[54%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-6 text-center z-0"
           >
             <div>
-              <p className="text-brand-dark font-semibold text-base mb-2">
-                여행 준비 중이신가요?
+              <p className="text-brand-dark font-semibold text-base mb-2 flex items-center gap-2">
+                <Plane size={18} className="text-brand" /> 여행 준비 중이신가요?
               </p>
-              <p className="text-base text-text-secondary">
+              <p className="text-base text-text-secondary flex flex-wrap items-center gap-1">
                 CarryOn에 여정을 등록하고{' '}
-                <span className="text-brand font-semibold">캐리어</span>로 활동해보세요.
+                <span className="text-brand font-semibold flex items-center gap-1">
+                  <Package size={16} /> 캐리어
+                </span>로 활동해보세요.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto">
-              <Button onClick={() => navigate('/trip/new')} size="lg" className="w-full sm:w-auto whitespace-nowrap">
-                여정 등록하기
+              <Button 
+                onClick={() => navigate('/trip/new')} 
+                size="lg" 
+                className="w-full sm:w-auto whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <Plane size={18} /> 여정 등록하기
               </Button>
-              <Button onClick={() => navigate('/requests')} variant="outline" size="lg" className="w-full sm:w-auto whitespace-nowrap px-8">
-                요청 찾아보기
+              <Button 
+                onClick={() => navigate('/requests')} 
+                variant="outline" 
+                size="lg" 
+                className="w-full sm:w-auto whitespace-nowrap px-8 flex items-center justify-center gap-2"
+              >
+                요청 찾아보기 <ArrowRight size={16} />
               </Button>
             </div>
           </motion.div>

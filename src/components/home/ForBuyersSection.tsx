@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/Button'
 import { calculateSuggestedReward, Item } from '../../utils/rewardCalculator'
+import { PlusCircle, Settings, DollarSign, ShoppingBag, Percent } from 'lucide-react'
 
 const examples: {
   title: string
@@ -71,11 +72,20 @@ function ForBuyersSection() {
         <div className="flex justify-center mb-16">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={() => navigate('/request/new')} size="lg" className="px-6 py-2 text-base">
-                배송 요청하기
+              <Button 
+                onClick={() => navigate('/request/new')} 
+                size="lg" 
+                className="px-6 py-2 text-base flex items-center justify-center gap-2"
+              >
+                <PlusCircle size={18} /> 배송 요청하기
               </Button>
-              <Button onClick={() => navigate('/mypage')} variant="outline" size="lg" className="px-6 py-2 text-base">
-                내 요청 관리
+              <Button 
+                onClick={() => navigate('/mypage')} 
+                variant="outline" 
+                size="lg" 
+                className="px-6 py-2 text-base flex items-center justify-center gap-2"
+              >
+                <Settings size={18} /> 내 요청 관리
               </Button>
             </div>
           </div>
@@ -92,34 +102,52 @@ function ForBuyersSection() {
             const saving = retailPriceKRW > 0 ? retailPriceKRW - (total + suggested) : undefined
 
             return (
-              <div key={title} className="border rounded-lg shadow-sm p-4 bg-blue-50 space-y-1 text-left">
-                <h4 className="text-base font-semibold text-blue-800">{title}</h4>
+              <div key={title} className="border rounded-layout shadow-card p-5 bg-blue-50 space-y-2 text-left hover:shadow-lg transition-all duration-200 hover:border-brand/30">
+                <h4 className="text-base font-semibold text-blue-800 flex items-center gap-2">
+                  <ShoppingBag size={18} className="text-brand" />
+                  {title}
+                </h4>
                 {retailCurrency && retailPrice > 0 && (
-                  <p className="text-sm text-gray-600">
-                    🇬🇧 현지 시세: {retailCurrency} {retailPrice.toFixed(2)} (약 ₩{retailPriceKRW.toLocaleString()})
+                  <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                    <span className="font-medium">🇬🇧</span> 현지 시세: {retailCurrency} {retailPrice.toFixed(2)} (약 ₩{retailPriceKRW.toLocaleString()})
                   </p>
                 )}
-                <div className="mt-1 text-sm text-gray-700 space-y-0.5 border-t border-blue-200 pt-2">
-                  <p>💰 한국 가격: ₩{total.toLocaleString()}</p>
-                  <p>📦 예상 수고비: ₩{suggested.toLocaleString()}</p>
+                <div className="mt-1 text-sm text-gray-700 space-y-2 border-t border-blue-200 pt-3">
+                  <p className="flex items-center gap-2">
+                    <DollarSign size={16} className="text-green-600" /> 한국 가격: ₩{total.toLocaleString()}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <PlusCircle size={16} className="text-brand" /> 예상 수고비: ₩{suggested.toLocaleString()}
+                  </p>
                 </div>
                 {saving !== undefined && (
-                  <p className="text-sm text-blue-700 font-medium mt-1">
-                    → 예상 절감: ₩{saving.toLocaleString()}
+                  <p className="text-sm text-blue-700 font-medium mt-1 flex items-center gap-2">
+                    <Percent size={16} /> 예상 절감: ₩{saving.toLocaleString()}
                   </p>
                 )}
-                <p className="text-sm text-gray-600 mt-1">💬 {comment}</p>
+                <p className="text-sm text-gray-600 mt-1 flex items-start gap-2">
+                  <span className="mt-1">💬</span> {comment}
+                </p>
               </div>
             )
           })}
         </div>
 
-        <div className="mt-14 bg-blue-100 rounded-xl p-5 border border-blue-300 text-blue-800 text-left">
-          <h4 className="text-base font-semibold mb-2">관세 부담이 적은 이유</h4>
-          <p className="text-sm leading-relaxed">
-            CarryOn은 개인 간의 1회성 위탁 배송 형식으로, 대부분 관세 없이 통과됩니다.<br />
-            캐리어가 직접 물건을 들고 전달하고, 소량·비상업성 구조라 세관에서 간소하게 처리되는 경우가 많습니다.
-          </p>
+        <div className="mt-14 bg-blue-100 rounded-layout p-6 border border-blue-300 text-blue-800 text-left shadow-sm hover:shadow-md transition-all duration-200">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-brand">
+                <Percent size={20} />
+              </div>
+            </div>
+            <div>
+              <h4 className="text-base font-semibold mb-2">관세 부담이 적은 이유</h4>
+              <p className="text-sm leading-relaxed">
+                CarryOn은 개인 간의 1회성 위탁 배송 형식으로, 대부분 관세 없이 통과됩니다.<br />
+                캐리어가 직접 물건을 들고 전달하고, 소량·비상업성 구조라 세관에서 간소하게 처리되는 경우가 많습니다.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

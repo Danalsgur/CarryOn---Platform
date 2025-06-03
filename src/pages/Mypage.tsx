@@ -280,37 +280,89 @@ export default function Mypage() {
           <h2 className="text-lg font-semibold text-blue-700">내 여정 목록</h2>
           {trips.length === 0 && <p className="text-sm text-gray-500">등록한 여정이 없습니다.</p>}
           {trips.map((trip) => {
-            const isPast = new Date(trip.departure_date) < new Date()
-            const hasMatch = trip.matches?.some((m) => m.status !== 'cancelled')
-            const displayStatus =
-              trip.status === 'cancelled'
-                ? '취소됨'
-                : isPast
-                ? '출발 완료'
-                : '진행중'
+            // 매칭 상태 확인
+            const hasAcceptedMatch = trip.matches?.some((m) => m.status === 'accepted')
+            const hasPendingMatch = trip.matches?.some((m) => m.status === 'pending')
+            
+            // 카드 스타일 결정
+            let cardStyle = "p-4 border rounded-lg shadow-sm space-y-2 bg-white hover:shadow-md transition-all duration-200";
+            if (hasAcceptedMatch) {
+              cardStyle = "p-4 border-2 border-green-500 rounded-lg shadow-sm space-y-2 bg-green-50 hover:shadow-md transition-all duration-200";
+            } else if (hasPendingMatch) {
+              cardStyle = "p-4 border-2 border-blue-500 rounded-lg shadow-sm space-y-2 bg-blue-50 hover:shadow-md transition-all duration-200";
+            }
 
             return (
-              <div key={trip.id} className="p-4 border rounded-lg shadow-sm space-y-2">
-                <div className="font-bold">{trip.to_city}행 여정</div>
-                <div className="text-sm text-gray-600">출발: {trip.departure_date}</div>
-                <div className="text-sm text-gray-400">예약번호: {trip.reservation_code || '없음'}</div>
-                <div className="text-sm text-gray-500">상태: {displayStatus}</div>
-
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    size="sm"
-                    disabled={hasMatch}
-                    onClick={() => {
-                      if (!hasMatch) navigate(`/trip/edit/${trip.id}`)
-                    }}
-                  >
-                    수정
-                  </Button>
+              <div 
+                key={trip.id} 
+                className={`${cardStyle} cursor-pointer`} 
+                onClick={() => navigate(`/trip/edit/${trip.id}`)}
+              >
+                <div className="flex justify-between items-start">
+                  <div className="font-bold text-lg text-blue-800">{trip.to_city}행 여정</div>
+                  {/* 상태 배지 */}
+                  <div className="inline-flex items-center">
+                    {hasAcceptedMatch ? (
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        매칭됨
+                      </span>
+                    ) : hasPendingMatch ? (
+                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        신청중 {trip.matches.filter(m => m.status === 'pending').length}개
+                      </span>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                        대기중
+                      </span>
+                    )}
+                  </div>
                 </div>
+                
+                <div className="text-sm text-gray-600 mt-2">출발: {dayjs(trip.departure_date).format('YYYY-MM-DD')}</div>
+                
+                {/* 매칭된 요청 정보 표시 - 모든 매칭 표시 */}
+                {hasAcceptedMatch && (() => {
+                  const acceptedMatches = trip.matches.filter(m => m.status === 'accepted' && m.request);
+                  if (acceptedMatches.length === 0) return null;
+                  
+                  // 총 수고비 계산
+                  const totalReward = acceptedMatches.reduce((sum, match) => {
+                    return sum + (match.request?.reward || 0);
+                  }, 0);
+                  
+                  return (
+                    <div className="mt-2 text-sm border-t pt-2 border-green-200 space-y-2">
+                      {/* 총 수고비 표시 */}
+                      <div className="flex justify-between items-center font-medium text-green-800 bg-green-50 p-2 rounded">
+                        <span>총 수고비</span>
+                        <span>{totalReward.toLocaleString()}원</span>
+                      </div>
+                      
+                      {/* 매칭된 요청 목록 */}
+                      <div className="space-y-1.5">
+                        {acceptedMatches.map((match, index) => (
+                          <div key={match.id} className="flex items-center justify-between">
+                            <a 
+                              href={`/request/${match.request?.id}`} 
+                              className="text-blue-600 hover:underline font-medium truncate max-w-[70%]"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {index + 1}. {match.request?.title}
+                            </a>
+                            <span className="text-sm font-medium text-green-700">
+                              {match.request?.reward.toLocaleString()}원
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
-                {hasMatch && (
-                  <p className="text-xs text-red-500 mt-1">※ 매칭 요청이 있어 수정할 수 없습니다.</p>
-                )}
+                {/* 수정 버튼 제거됨 */}
               </div>
             )
           })}
