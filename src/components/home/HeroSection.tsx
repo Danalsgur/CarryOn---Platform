@@ -23,7 +23,7 @@ function HeroSection() {
   }, [])
 
   return (
-    <section className="relative min-h-[73vh] bg-white px-4 pt-25 pb-0 overflow-hidden">
+    <section className="relative min-h-[80vh] bg-surface px-4 md:px-6 pt-25 pb-16 overflow-hidden">
       {/* 문구 영역 */}
       <motion.div
         initial={{ y: '-50%', x: '-50%' }}
@@ -31,7 +31,7 @@ function HeroSection() {
         transition={{ duration: 0.9, ease: 'easeInOut' }}
         className="absolute top-[67%] left-1/2 text-center z-10"
       >
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-blue-700 leading-tight mb-3">
+        <h1 className="text-5xl sm:text-6xl font-extrabold text-brand-dark leading-tight mb-4">
           <Typewriter
             words={['CarryOn']}
             loop={1}
@@ -39,7 +39,7 @@ function HeroSection() {
             typeSpeed={80}
           />
         </h1>
-        <p className="text-base sm:text-lg text-blue-700">
+        <p className="text-base sm:text-lg text-brand-dark">
           {showSecondLine && (
             <Typewriter
               words={['여유 공간으로 이어지는 사람들']}
@@ -58,23 +58,23 @@ function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className="absolute top-[54%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-center z-0"
+            className="absolute top-[54%] left-1/2 -translate-x-1/2 flex flex-col items-center gap-6 text-center z-0"
           >
             <div>
-              <p className="text-blue-800 font-semibold text-base mb-1">
+              <p className="text-brand-dark font-semibold text-base mb-2">
                 여행 준비 중이신가요?
               </p>
-              <p className="text-base text-gray-700">
+              <p className="text-base text-text-secondary">
                 CarryOn에 여정을 등록하고{' '}
-                <span className="text-blue-600 font-semibold">캐리어</span>로 활동해보세요.
+                <span className="text-brand font-semibold">캐리어</span>로 활동해보세요.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button onClick={() => navigate('/trip/new')} size="lg">
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto">
+              <Button onClick={() => navigate('/trip/new')} size="lg" className="w-full sm:w-auto whitespace-nowrap">
                 여정 등록하기
               </Button>
-              <Button onClick={() => navigate('/requests')} variant="outline" size="lg">
+              <Button onClick={() => navigate('/requests')} variant="outline" size="lg" className="w-full sm:w-auto whitespace-nowrap px-8">
                 요청 찾아보기
               </Button>
             </div>

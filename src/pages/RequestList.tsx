@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import dayjs from 'dayjs'
+import { Calendar, MapPin, Coins, ArrowUpDown, SlidersHorizontal, Clock } from 'lucide-react'
 
 type RawRequest = {
   id: string
@@ -13,7 +15,9 @@ type RawRequest = {
   receive_end: string
   status: string
   user_id: string
+  created_at: string
   profiles: { nickname: string }[] | null
+  matches: { id: string, status: string }[] | null
 }
 
 type Request = {
@@ -26,16 +30,29 @@ type Request = {
   receive_end: string
   status: string
   user_id: string
+  created_at: string
   profiles: { nickname: string } | null
+  matches: { id: string, status: string }[] | null
+  hasAcceptedCarrier?: boolean
+  hasApplicants?: boolean
 }
 
 export default function RequestList() {
   const { loading: authLoading } = useAuth()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
-  const [showCompleted, setShowCompleted] = useState(false)
-  const [sortByReward, setSortByReward] = useState(false)
-
+  
+  // 필터링 옵션
+  const [hideCompleted, setHideCompleted] = useState(false)
+  
+  // 정렬 옵션
+  const [sortOption, setSortOption] = useState<'recent' | 'reward' | 'endDate'>('recent')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  
+  // 도시 필터
+  const [cities, setCities] = useState<string[]>([])
+  const [selectedCity, setSelectedCity] = useState<string>('')
+  
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -43,6 +60,31 @@ export default function RequestList() {
 
     const fetchRequests = async () => {
       setLoading(true)
+
+      // 도시 목록 가져오기 (첫 로딩 시 한 번만)
+      if (cities.length === 0) {
+        const { data: citiesData } = await supabase
+          .from('requests')
+          .select('destination_city')
+          .eq('deleted', false)
+          .order('destination_city')
+        
+        if (citiesData) {
+          // 기존 도시에서 중복 제거
+          const existingCities = Array.from(new Set(citiesData.map(item => item.destination_city)))
+          
+          // 추가 도시 설정
+          const additionalCities = ['뉴욕', '파리']
+          
+          // 기존 도시와 추가 도시 합치기 및 중복 제거
+          const allCities = Array.from(new Set([...existingCities, ...additionalCities]))
+          
+          // 알파벳 순으로 정렬
+          allCities.sort()
+          
+          setCities(allCities)
+        }
+      }
 
       let query = supabase
         .from('requests')
@@ -56,14 +98,20 @@ export default function RequestList() {
           receive_end,
           status,
           user_id,
-          profiles:profiles!user_id (
-            nickname
-          )
+          created_at,
+          profiles:profiles!user_id(nickname),
+          matches(id, status)
         `)
         .eq('deleted', false)
 
-      if (!showCompleted) {
-        query = query.neq('status', 'matched')
+      // 매칭 완료 요청 가리기 필터링
+      if (hideCompleted) {
+        query = query.not('status', 'eq', 'matched')
+      }
+      
+      // 도시 필터링
+      if (selectedCity) {
+        query = query.eq('destination_city', selectedCity)
       }
 
       const { data, error } = await query
@@ -71,88 +119,224 @@ export default function RequestList() {
       if (error) {
         console.error('❌ 요청 불러오기 실패:', error.message)
       } else {
-        console.log('🔍 Supabase 응답 확인:', data)
-
-        data.forEach((item, index) => {
-          console.log(`🧩 [${index}] 요청 ID: ${item.id}`)
-          console.log(`    └ user_id: ${item.user_id}`)
-          console.log(`    └ profiles:`, item.profiles)
+        // 데이터 정규화 및 추가 속성 계산
+        const result = (data as RawRequest[]).map((item): Request => {
+          // 프로필 정보 정규화
+          const normalizedItem = {
+            ...item,
+            profiles: Array.isArray(item.profiles)
+              ? item.profiles[0] ?? null
+              : item.profiles ?? null,
+          }
+          
+          // 캐리어 지원 상태 계산
+          const hasAcceptedCarrier = item.matches?.some(m => m.status === 'accepted') || false
+          const hasApplicants = (item.matches?.length || 0) > 0
+          
+          return {
+            ...normalizedItem,
+            hasAcceptedCarrier,
+            hasApplicants
+          }
         })
 
-        const result = (data as RawRequest[]).map((item): Request => ({
-          ...item,
-          profiles: Array.isArray(item.profiles)
-            ? item.profiles[0] ?? null
-            : item.profiles ?? null,
-        }))
+        // 검색 기능 제거
+        let filteredResults = result
+        
+        // 지원자 필터링 제거
 
-        if (sortByReward) {
-          result.sort((a, b) => b.reward - a.reward)
+        // 정렬 적용
+        if (sortOption === 'reward') {
+          filteredResults.sort((a, b) => 
+            sortDirection === 'desc' ? b.reward - a.reward : a.reward - b.reward
+          )
+        } else if (sortOption === 'endDate') {
+          filteredResults.sort((a, b) => {
+            const dateA = new Date(a.receive_end).getTime()
+            const dateB = new Date(b.receive_end).getTime()
+            return sortDirection === 'desc' ? dateB - dateA : dateA - dateB
+          })
+        } else { // recent
+          filteredResults.sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime()
+            const dateB = new Date(b.created_at).getTime()
+            return sortDirection === 'desc' ? dateB - dateA : dateA - dateB
+          })
         }
 
-        setRequests(result)
+        setRequests(filteredResults)
       }
 
       setLoading(false)
     }
 
     fetchRequests()
-  }, [authLoading, showCompleted, sortByReward])
+  }, [authLoading, hideCompleted, sortOption, sortDirection, selectedCity, cities.length])
+
+  // 상태 배지 컴포넌트
+  const StatusBadge = ({ hasApplicants, hasAcceptedCarrier }: { hasApplicants?: boolean, hasAcceptedCarrier?: boolean }) => {
+    if (hasAcceptedCarrier) {
+      return (
+        <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+          매칭 완료
+        </div>
+      )
+    } else if (hasApplicants) {
+      return (
+        <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+          지원자 있음
+        </div>
+      )
+    } else {
+      return (
+        <div className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+          대기중
+        </div>
+      )
+    }
+  }
+
+  // 날짜 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    return dayjs(dateString).format('YYYY.MM.DD')
+  }
+
+  // 정렬 방향 토글 함수
+  const toggleSortDirection = () => {
+    setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc')
+  }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6 text-text-primary">요청 리스트</h1>
-
-      <div className="flex gap-3 items-center mb-4 text-sm">
-        <label className="flex items-center gap-1">
-          <input
-            type="checkbox"
-            checked={showCompleted}
-            onChange={(e) => setShowCompleted(e.target.checked)}
-          />
-          매칭 완료 요청도 보기
-        </label>
-
-        <label className="flex items-center gap-1">
-          <input
-            type="checkbox"
-            checked={sortByReward}
-            onChange={(e) => setSortByReward(e.target.checked)}
-          />
-          수고비 높은 순 정렬
-        </label>
+      
+      {/* 필터링 섹션 */}
+      <div className="bg-white rounded-xl shadow p-4 mb-6">
+        <div className="flex flex-wrap gap-4 items-center justify-between">
+          {/* 도시 필터 */}
+          <div className="flex items-center gap-3">
+            <SlidersHorizontal size={16} className="text-gray-500" />
+            <select
+              className="border rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+            >
+              <option value="">모든 도시</option>
+              {cities.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* 매칭 완료 요청 가리기 필터 */}
+          <div className="flex items-center">
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hideCompleted}
+                onChange={(e) => setHideCompleted(e.target.checked)}
+                className="rounded text-blue-500 focus:ring-blue-500"
+              />
+              <span className="text-sm">매칭 완료 요청 가리기</span>
+            </label>
+          </div>
+          
+          {/* 정렬 옵션 - 새로운 UI */}
+          <div className="flex items-center bg-gray-50 rounded-lg p-1 border">
+            <button 
+              onClick={() => setSortOption('recent')}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'recent' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+            >
+              <Clock size={14} className="inline mr-1" />
+              최신순
+            </button>
+            <button 
+              onClick={() => setSortOption('reward')}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'reward' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+            >
+              <Coins size={14} className="inline mr-1" />
+              수고비
+            </button>
+            <button 
+              onClick={() => setSortOption('endDate')}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'endDate' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
+            >
+              <Calendar size={14} className="inline mr-1" />
+              마감일
+            </button>
+            <button 
+              onClick={toggleSortDirection}
+              className="px-3 py-1.5 rounded text-xs font-medium ml-1 hover:bg-gray-100 transition-colors"
+            >
+              <ArrowUpDown size={14} className="inline" />
+              {sortDirection === 'desc' ? '내림' : '오름'}
+            </button>
+          </div>
+        </div>
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-500">불러오는 중...</p>
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
       ) : requests.length === 0 ? (
-        <p className="text-sm text-gray-400">표시할 요청이 없습니다.</p>
+        <div className="bg-white rounded-xl shadow p-8 text-center">
+          <p className="text-gray-500">표시할 요청이 없습니다.</p>
+          <p className="text-sm text-gray-400 mt-2">필터 설정을 변경하거나 나중에 다시 확인해주세요.</p>
+        </div>
       ) : (
-        <ul className="space-y-4">
-          {requests.map((req) => (
-            <li
-              key={req.id}
-              className="border p-4 rounded-xl bg-white shadow hover:bg-gray-50 cursor-pointer transition"
-              onClick={() => navigate(`/request/${req.id}`)}
-            >
-              <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-blue-800">{req.title}</h2>
-                <span className="text-sm text-gray-500">
-                  {req.reward.toLocaleString()} {req.currency}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500">
-                닉네임: {req.profiles?.nickname ?? '알 수 없음'}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">도시: {req.destination_city}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {req.receive_start} ~ {req.receive_end}
-              </p>
-              <p className="text-xs text-gray-400">상태: {req.status}</p>
-            </li>
-          ))}
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {requests.map((req) => {
+            // 카드 스타일 결정
+            let cardStyle = "border p-4 rounded-xl bg-white shadow hover:shadow-md transition-all duration-200";
+            if (req.hasAcceptedCarrier) {
+              cardStyle = "border-2 border-green-500 p-4 rounded-xl bg-green-50 shadow hover:shadow-md transition-all duration-200";
+            } else if (req.hasApplicants) {
+              cardStyle = "border-2 border-blue-500 p-4 rounded-xl bg-blue-50 shadow hover:shadow-md transition-all duration-200";
+            }
+            
+            return (
+              <li
+                key={req.id}
+                className={cardStyle}
+                onClick={() => navigate(`/request/${req.id}`)}
+              >
+                <div className="flex justify-between items-start">
+                  <h2 className="text-lg font-semibold text-blue-800 line-clamp-1">{req.title}</h2>
+                  <StatusBadge hasApplicants={req.hasApplicants} hasAcceptedCarrier={req.hasAcceptedCarrier} />
+                </div>
+                
+                <div className="mt-2 flex items-center text-sm text-gray-600">
+                  <MapPin size={16} className="inline mr-1 text-gray-400" />
+                  <span>{req.destination_city}</span>
+                  <span className="mx-2">•</span>
+                  <Coins size={14} className="mr-1.5" />
+                  <span className="font-medium">
+                    {req.reward.toLocaleString()}원
+                  </span>
+                </div>
+                
+                <div className="mt-2 flex items-center text-xs text-gray-500">
+                  <Calendar size={14} className="inline mr-1 text-gray-400" />
+                  <span>수령일: {formatDate(req.receive_start)} ~ {formatDate(req.receive_end)}</span>
+                </div>
+                
+                <div className="mt-2 flex justify-between items-center">
+                  <p className="text-xs text-gray-500">
+                    요청자: {req.profiles?.nickname ?? '알 수 없음'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {dayjs(req.created_at).format('YYYY.MM.DD')} 등록
+                  </p>
+                </div>
+              </li>
+            )
+          })}
         </ul>
-      )}
+      )}      
     </div>
   )
 }

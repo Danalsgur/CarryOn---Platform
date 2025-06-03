@@ -18,6 +18,7 @@ import TripEdit from './pages/TripEdit'
 import ResetPasswordRequest from './pages/ResetPasswordRequest'
 import ResetPasswordUpdate from './pages/ResetPasswordUpdate'
 import RequestManage from './pages/RequestManage'
+import ProfilePage from './pages/ProfilePage'
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="/trip/new" element={<TripNew />} />
           <Route path="/trip/edit/:id" element={<TripEdit />} />
           <Route path="/profile/edit" element={<ProfileEdit />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
     </Routes>

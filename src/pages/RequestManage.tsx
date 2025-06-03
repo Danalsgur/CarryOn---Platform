@@ -95,32 +95,65 @@ export default function RequestManage() {
   }, [id, user, navigate])
 
   const handleAccept = async (selectedId: string) => {
-    const updates = matches.map((m) => ({
-      id: m.id,
-      status: m.id === selectedId ? 'accepted' : 'rejected',
-    }))
-
-    const { error } = await supabase
-      .from('matches')
-      .upsert(updates, { onConflict: 'id' })
-
-    if (!error) {
+    try {
+      // First update the selected match to 'accepted'
+      const { error: acceptError } = await supabase
+        .from('matches')
+        .update({ status: 'accepted' })
+        .eq('id', selectedId)
+      
+      if (acceptError) {
+        console.error('Error accepting match:', acceptError)
+        alert('선택한 캐리어를 수락하는 중 오류가 발생했습니다.')
+        return
+      }
+      
+      // Then update all other matches to 'rejected'
+      const { error: rejectError } = await supabase
+        .from('matches')
+        .update({ status: 'rejected' })
+        .eq('request_id', id)
+        .neq('id', selectedId)
+      
+      if (rejectError) {
+        console.error('Error rejecting other matches:', rejectError)
+        // Continue anyway since the main selection succeeded
+      }
+      
+      // Update local state
       setMatches((prev) =>
         prev.map((m) => ({
           ...m,
           status: m.id === selectedId ? 'accepted' : 'rejected',
         }))
       )
+      
+      alert('캐리어가 성공적으로 선택되었습니다.')
+    } catch (error) {
+      console.error('Error in handleAccept:', error)
+      alert('처리 중 오류가 발생했습니다. 다시 시도해주세요.')
     }
   }
 
   const handleDelete = async () => {
+    // 삭제 확인 대화상자 표시
+    const isConfirmed = window.confirm('정말 이 요청을 삭제하시겠습니까? 삭제된 요청은 목록에서 사라집니다.')
+    
+    // 사용자가 취소를 누른 경우
+    if (!isConfirmed) return
+    
     const { error } = await supabase
       .from('requests')
       .update({ deleted: true })
       .eq('id', request?.id)
 
-    if (!error) navigate('/mypage?tab=buyer')
+    if (!error) {
+      alert('요청이 성공적으로 삭제되었습니다.')
+      navigate('/mypage?tab=buyer')
+    } else {
+      alert('요청 삭제 중 오류가 발생했습니다. 다시 시도해주세요.')
+      console.error('Delete error:', error)
+    }
   }
 
   const handleEdit = () => {
@@ -170,28 +203,56 @@ export default function RequestManage() {
 
       <div className="space-y-4">
         <h3 className="text-xl font-semibold">지원자 목록 ({matches.length})</h3>
-        {matches.map((m) => (
-          <div
-            key={m.id}
-            className="bg-white border border-gray-200 shadow-sm rounded-lg p-4 flex justify-between items-center"
-          >
-            <div className="text-gray-700">
-              <p><strong>닉네임:</strong>{' '}
-                <a href={`/profile/${m.user_id}`} className="text-blue-600 hover:underline">
-                  {m.profiles?.nickname ?? '알 수 없음'}
-                </a>
-              </p>
-              <p><strong>비행일:</strong> {m.trip?.departure_date ? dayjs(m.trip.departure_date).format('YYYY-MM-DD') : '정보 없음'}</p>
-              <p><strong>매칭 시간:</strong> {dayjs(m.created_at).format('YYYY-MM-DD HH:mm')}</p>
-            </div>
-            <button
-              onClick={() => handleAccept(m.id)}
-              className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+        {matches.map((m) => {
+          const isAccepted = m.status === 'accepted';
+          const isRejected = m.status === 'rejected';
+          
+          return (
+            <div
+              key={m.id}
+              className={`border shadow-sm rounded-lg p-4 flex justify-between items-center ${isAccepted ? 'bg-green-50 border-green-300' : isRejected ? 'bg-gray-50 border-gray-300' : 'bg-white border-gray-200'}`}
             >
-              선택
-            </button>
-          </div>
-        ))}
+              <div className="text-gray-700 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  {isAccepted && (
+                    <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      선택됨
+                    </span>
+                  )}
+                  {isRejected && (
+                    <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
+                      미선택
+                    </span>
+                  )}
+                </div>
+                <p><strong>닉네임:</strong>{' '}
+                  <a href={`/profile/${m.user_id}`} className="text-blue-600 hover:underline">
+                    {m.profiles?.nickname ?? '알 수 없음'}
+                  </a>
+                </p>
+                <p><strong>비행일:</strong> {m.trip?.departure_date ? dayjs(m.trip.departure_date).format('YYYY-MM-DD') : '정보 없음'}</p>
+                <p><strong>매칭 시간:</strong> {dayjs(m.created_at).format('YYYY-MM-DD HH:mm')}</p>
+              </div>
+              {!isAccepted && !isRejected ? (
+                <button
+                  onClick={() => handleAccept(m.id)}
+                  className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
+                >
+                  선택
+                </button>
+              ) : isAccepted ? (
+                <div className="text-green-700 font-medium flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  캐리어 선택 완료
+                </div>
+              ) : (
+                <span className="text-gray-500 text-sm">미선택됨</span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   )

@@ -4,8 +4,9 @@ import { ButtonHTMLAttributes } from 'react'
 import clsx from 'clsx'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  size?: 'sm' | 'md' | 'lg' // ✅ 'lg' 추가
+  size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outline'
+  loading?: boolean
 }
 
 export default function Button({
@@ -13,27 +14,42 @@ export default function Button({
   size = 'md',
   variant = 'default',
   className = '',
+  loading = false,
   ...props
 }: ButtonProps) {
-  const base = 'rounded font-semibold transition-all duration-200 focus:outline-none'
+  const base = 'rounded-control font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-dark/30'
 
   const sizeStyle = {
-    sm: 'text-sm px-3 py-1',
+    sm: 'text-sm px-3 py-1.5',
     md: 'text-base px-4 py-2',
-    lg: 'text-lg px-6 py-3', // ✅ lg 스타일 추가
+    lg: 'text-lg px-6 py-3',
   }[size]
 
   const variantStyle = {
-    default: 'bg-blue-600 text-white hover:bg-blue-700',
-    outline: 'border border-blue-600 text-blue-600 hover:bg-blue-50',
+    default: 'bg-brand text-white hover:bg-brand-dark active:bg-brand-dark/90',
+    outline: 'border border-brand text-brand hover:bg-brand-light/20 active:bg-brand-light/30',
   }[variant]
 
   return (
     <button
       {...props}
-      className={clsx(base, sizeStyle, variantStyle, className)}
+      disabled={loading || props.disabled}
+      className={clsx(
+        base, 
+        sizeStyle, 
+        variantStyle, 
+        className,
+        loading && 'opacity-70 cursor-wait'
+      )}
     >
-      {children}
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </button>
   )
 }

@@ -35,6 +35,7 @@ export default function RequestDetail() {
   const [matchStatus, setMatchStatus] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [isOwner, setIsOwner] = useState(false)
+  const [isRequestMatched, setIsRequestMatched] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,7 +47,7 @@ export default function RequestDetail() {
 
       const { data: req, error: reqError } = await supabase
         .from('requests')
-        .select('*')
+        .select('*, matches(id, status)')
         .eq('id', id)
         .single()
 
@@ -55,6 +56,9 @@ export default function RequestDetail() {
         return
       }
 
+      // 요청이 이미 매칭 완료 상태인지 확인
+      setIsRequestMatched(req.status === 'matched')
+      
       setRequest(req as Request)
 
       if (uid) {
@@ -92,8 +96,13 @@ export default function RequestDetail() {
 
   const handleApply = async () => {
     if (!hasTrip) {
-      alert('여정을 먼저 등록해주세요.')
+      alert('여정을 먼저 등록해야 캐리어로 지원할 수 있어요.')
       navigate('/trip/new')
+      return
+    }
+    
+    if (isRequestMatched) {
+      alert('이미 매칭이 완료된 요청입니다.')
       return
     }
 
@@ -109,11 +118,24 @@ export default function RequestDetail() {
       .single()
 
     if (!myTrip) {
-      alert('여정을 먼저 등록해주세요.')
+      alert('여정을 먼저 등록해야 캐리어로 지원할 수 있어요.')
       navigate('/trip/new')
       return
     }
 
+    // 요청 상태 서버에서 다시 확인
+    const { data: currentRequest } = await supabase
+      .from('requests')
+      .select('status')
+      .eq('id', request.id)
+      .single()
+      
+    if (currentRequest?.status === 'matched') {
+      alert('이미 매칭이 완료된 요청입니다.')
+      setIsRequestMatched(true)
+      return
+    }
+    
     const { data: existingMatch } = await supabase
       .from('matches')
       .select('id, status')
@@ -167,22 +189,22 @@ export default function RequestDetail() {
     }
   }
 
-  if (loading) return <div className="p-4">불러오는 중...</div>
+  if (loading) return <div className="p-6 text-text-muted">불러오는 중...</div>
   if (!request) return null
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-xl mx-auto px-4 md:px-6 py-8 space-y-6">
       {/* 타이틀 & 요약 */}
-      <div className="space-y-1">
+      <div className="space-y-2">
         <h1 className="text-2xl font-bold text-text-primary">{request.title}</h1>
-        <div className="text-sm text-gray-600">{request.destination_city} | 수고비: {request.reward.toLocaleString()} {request.currency}</div>
-        <div className="text-sm text-gray-500">수령 기간: {request.receive_start} ~ {request.receive_end}</div>
+        <div className="text-sm text-text-secondary">{request.destination_city} | 수고비: {request.reward.toLocaleString()} {request.currency}</div>
+        <div className="text-sm text-text-muted">수령 기간: {request.receive_start} ~ {request.receive_end}</div>
       </div>
 
       {/* 품목 카드 */}
-      <div className="p-4 bg-gray-50 border rounded-md">
-        <h3 className="font-semibold mb-2 text-text-primary">요청 품목</h3>
-        <ul className="list-disc ml-5 space-y-1 text-sm text-gray-700">
+      <div className="p-4 bg-background border rounded-layout shadow-card">
+        <h3 className="text-lg font-semibold mb-3 text-text-primary">요청 품목</h3>
+        <ul className="list-disc ml-5 space-y-2 text-sm text-text-secondary">
           {request.items.map((item, i) => (
             <li key={i}>
               {item.name} - {item.price.toLocaleString()}원
@@ -195,22 +217,46 @@ export default function RequestDetail() {
 
       {/* 설명 */}
       {request.description && (
-        <div className="p-4 bg-white border rounded-md">
-          <h3 className="font-semibold mb-2 text-text-primary">요청 설명</h3>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{request.description}</p>
+        <div className="p-4 bg-surface border rounded-layout shadow-card">
+          <h3 className="text-lg font-semibold mb-3 text-text-primary">요청 설명</h3>
+          <p className="text-sm text-text-secondary whitespace-pre-wrap">{request.description}</p>
         </div>
       )}
 
       {/* 액션 버튼 */}
       {userId ? (
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-8">
           {matchStatus === 'pending' ? (
             <>
-              <Button className="w-full sm:w-auto" disabled>지원 완료</Button>
+              <Button className="w-full sm:w-auto" disabled>캐리어 지원 완료</Button>
               <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>지원 취소</Button>
             </>
           ) : (
-            <Button className="w-full sm:w-auto" onClick={handleApply} disabled={!hasTrip}>맡을게요</Button>
+            <div className="flex flex-col w-full sm:w-auto gap-2">
+              <Button 
+                className="w-full sm:w-auto" 
+                onClick={handleApply} 
+                disabled={!hasTrip || isRequestMatched}
+              >
+                캐리어 지원하기
+              </Button>
+              {!hasTrip && (
+                <div className="text-xs text-brand bg-brand-light/20 p-2 rounded-control border border-brand/20">
+                  <p>여정을 먼저 등록해야 캐리어로 지원할 수 있어요.</p>
+                  <button 
+                    onClick={() => navigate('/trip/new')} 
+                    className="text-brand hover:text-brand-dark font-medium underline mt-1"
+                  >
+                    여정 등록하러 가기 →
+                  </button>
+                </div>
+              )}
+              {isRequestMatched && (
+                <div className="text-xs text-red-600 bg-red-50 p-2 rounded-control border border-red-100">
+                  <p>이미 매칭이 완료된 요청입니다.</p>
+                </div>
+              )}
+            </div>
           )}
 
           <Button
@@ -223,10 +269,10 @@ export default function RequestDetail() {
           </Button>
         </div>
       ) : (
-        <div className="mt-6 text-sm text-gray-500">
+        <div className="mt-8 p-4 bg-background rounded-layout border text-text-secondary text-sm">
           이 요청에 지원하려면{' '}
           <span
-            className="underline cursor-pointer text-blue-600"
+            className="text-brand hover:text-brand-dark cursor-pointer transition-colors duration-200"
             onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
           >
             로그인
@@ -237,7 +283,7 @@ export default function RequestDetail() {
 
       {/* 작성자 알림 */}
       {isOwner && (
-        <div className="mt-10 text-sm text-blue-700 border-t pt-4">
+        <div className="mt-10 text-sm text-brand border-t pt-4">
           이 요청은 내가 등록한 거예요. 매칭 확정 기능은 곧 추가됩니다.
         </div>
       )}
