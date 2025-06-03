@@ -155,6 +155,8 @@ export default function RequestDetail() {
         user_id: userId,
         status: 'pending'
       })
+      
+      // 알림은 데이터베이스 트리거를 통해 자동으로 생성됨
     }
 
     alert('지원 완료! 아래 오픈채팅 링크를 통해 바이어에게 먼저 연락해보세요.')
@@ -231,12 +233,18 @@ export default function RequestDetail() {
               <Button className="w-full sm:w-auto" disabled>캐리어 지원 완료</Button>
               <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>지원 취소</Button>
             </>
+          ) : isRequestMatched ? (
+            <div className="flex flex-col w-full sm:w-auto gap-2">
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-control border border-red-100 font-medium">
+                <p>이미 매칭이 완료된 요청입니다.</p>
+              </div>
+            </div>
           ) : (
             <div className="flex flex-col w-full sm:w-auto gap-2">
               <Button 
                 className="w-full sm:w-auto" 
                 onClick={handleApply} 
-                disabled={!hasTrip || isRequestMatched}
+                disabled={!hasTrip}
               >
                 캐리어 지원하기
               </Button>
@@ -249,11 +257,6 @@ export default function RequestDetail() {
                   >
                     여정 등록하러 가기 →
                   </button>
-                </div>
-              )}
-              {isRequestMatched && (
-                <div className="text-xs text-red-600 bg-red-50 p-2 rounded-control border border-red-100">
-                  <p>이미 매칭이 완료된 요청입니다.</p>
                 </div>
               )}
             </div>

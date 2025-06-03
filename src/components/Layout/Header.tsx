@@ -2,15 +2,20 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../../components/Button'
-import { User, Settings, Package, Plane, LogOut, ChevronRight, Home, Menu, X } from 'lucide-react'
+import { User, Settings, Package, Plane, LogOut, ChevronRight, Home, Menu, X, Bell } from 'lucide-react'
+import { getNotifications, getUnreadNotificationsCount, markNotificationAsRead, markAllNotificationsAsRead } from '../../utils/notifications'
 
 export default function Header() {
   const navigate = useNavigate()
   const { user, profile, logout, loading } = useAuth()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const notificationRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -23,11 +28,57 @@ export default function Header() {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
         setMobileMenuOpen(false)
       }
+
+      // 알림 메뉴 외부 클릭 처리
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setNotificationOpen(false)
+      }
     }
     
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // 알림 데이터 로드
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (user) {
+        const notifs = await getNotifications(user.id)
+        setNotifications(notifs)
+        const count = await getUnreadNotificationsCount(user.id)
+        setUnreadCount(count)
+      }
+    }
+
+    loadNotifications()
+    
+    // 30초마다 알림 업데이트
+    const interval = setInterval(loadNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [user])
+
+  // 알림 읽음 처리
+  const handleNotificationClick = async (notificationId: string, link: string) => {
+    await markNotificationAsRead(notificationId)
+    // 알림 목록 업데이트
+    setNotifications(notifications.map(notif => 
+      notif.id === notificationId ? { ...notif, is_read: true } : notif
+    ))
+    // 읽지 않은 알림 수 업데이트
+    setUnreadCount(prev => Math.max(0, prev - 1))
+    // 링크로 이동
+    navigate(link)
+    setNotificationOpen(false)
+  }
+
+  // 모든 알림 읽음 처리
+  const handleMarkAllAsRead = async () => {
+    if (user) {
+      await markAllNotificationsAsRead(user.id)
+      setNotifications(notifications.map(notif => ({ ...notif, is_read: true })))
+      setUnreadCount(0)
+    }
+  }
 
   if (loading) return null
 
@@ -51,6 +102,74 @@ export default function Header() {
           <User size={16} />
           마이페이지
         </Link>
+        
+        {user && (
+          <div className="relative" ref={notificationRef}>
+            <button
+              className="hover:text-brand transition-colors duration-200 flex items-center gap-1 relative"
+              onClick={() => setNotificationOpen(prev => !prev)}
+              title="알림"
+            >
+              <Bell size={16} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {notificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-surface border border-gray-200 rounded-layout shadow-card z-50 overflow-hidden transition-all duration-300 ease-in-out">
+                {/* 알림 헤더 */}
+                <div className="bg-brand/5 p-3 border-b border-gray-200 flex justify-between items-center">
+                  <p className="font-medium text-text-primary">알림</p>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={handleMarkAllAsRead}
+                      className="text-xs text-brand hover:text-brand-dark transition-colors duration-200"
+                    >
+                      모두 읽음 표시
+                    </button>
+                  )}
+                </div>
+
+                {/* 알림 목록 */}
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-text-muted">
+                      알림이 없습니다
+                    </div>
+                  ) : (
+                    notifications.map(notification => (
+                      <div 
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification.id, notification.link)}
+                        className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${!notification.is_read ? 'bg-brand/5' : ''}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 ${!notification.is_read ? 'bg-brand' : 'bg-gray-300'}`} />
+                          <div>
+                            <p className="text-sm font-medium text-text-primary">{notification.title}</p>
+                            <p className="text-xs text-text-secondary mt-1">{notification.message}</p>
+                            <p className="text-xs text-text-muted mt-1">
+                              {new Date(notification.created_at).toLocaleString('ko-KR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {!user && (
           <Button size="sm" onClick={() => navigate('/login')}>로그인</Button>

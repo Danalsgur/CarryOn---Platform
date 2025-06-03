@@ -130,8 +130,10 @@ export default function RequestList() {
           }
           
           // 캐리어 지원 상태 계산
-          const hasAcceptedCarrier = item.matches?.some(m => m.status === 'accepted') || false
-          const hasApplicants = (item.matches?.length || 0) > 0
+          // 1. 요청 status가 'matched'면 무조건 매칭 완료 상태로 처리
+          // 2. 그렇지 않은 경우 matches 배열 확인
+          const hasAcceptedCarrier = item.status === 'matched' || item.matches?.some(m => m.status === 'accepted') || false
+          const hasApplicants = item.status !== 'matched' && ((item.matches?.length || 0) > 0)
           
           return {
             ...normalizedItem,

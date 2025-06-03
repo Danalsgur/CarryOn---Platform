@@ -96,6 +96,13 @@ export default function RequestManage() {
 
   const handleAccept = async (selectedId: string) => {
     try {
+      // 선택된 매치 정보 가져오기
+      const selectedMatch = matches.find(m => m.id === selectedId);
+      if (!selectedMatch) {
+        alert('선택한 캐리어 정보를 찾을 수 없습니다.')
+        return
+      }
+      
       // First update the selected match to 'accepted'
       const { error: acceptError } = await supabase
         .from('matches')
@@ -108,15 +115,27 @@ export default function RequestManage() {
         return
       }
       
-      // Then update all other matches to 'rejected'
-      const { error: rejectError } = await supabase
-        .from('matches')
-        .update({ status: 'rejected' })
-        .eq('request_id', id)
-        .neq('id', selectedId)
+      // 다른 매치들을 개별적으로 업데이트 (upsert 대신 개별 update 사용)
+      let hasRejectionError = false;
       
-      if (rejectError) {
-        console.error('Error rejecting other matches:', rejectError)
+      // 선택되지 않은 매치들만 필터링
+      const otherMatches = matches.filter(m => m.id !== selectedId);
+      
+      // 각 매치를 개별적으로 업데이트
+      for (const match of otherMatches) {
+        const { error } = await supabase
+          .from('matches')
+          .update({ status: 'rejected' })
+          .eq('id', match.id);
+          
+        if (error) {
+          console.error(`Error rejecting match ${match.id}:`, error);
+          hasRejectionError = true;
+        }
+      }
+      
+      if (hasRejectionError) {
+        console.warn('일부 매치 거부 중 오류가 발생했습니다. 선택된 캐리어는 정상적으로 수락되었습니다.');
         // Continue anyway since the main selection succeeded
       }
       
@@ -127,6 +146,8 @@ export default function RequestManage() {
           status: m.id === selectedId ? 'accepted' : 'rejected',
         }))
       )
+      
+      // 알림 생성 코드 제거 - 데이터베이스 트리거로 대체됨
       
       alert('캐리어가 성공적으로 선택되었습니다.')
     } catch (error) {
