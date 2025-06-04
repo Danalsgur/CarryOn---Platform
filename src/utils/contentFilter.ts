@@ -2,10 +2,78 @@
 
 // 부적절한 단어 목록 (한국어, 영어)
 const inappropriateWords = [
-  // 한국어 비속어/욕설 (실제 구현 시 더 많은 단어 추가 필요)
-  '씨발', '병신', '개새끼', '지랄', '좆', '새끼', '엿먹어',
-  // 영어 비속어/욕설 (실제 구현 시 더 많은 단어 추가 필요)
-  'fuck', 'shit', 'bitch', 'asshole', 'dick', 'bastard'
+  // 한국어 비속어/욕설
+  // 직접적인 욕설
+  '씨발', '시발', '시발새끼', '시발넘', '시발뇬', '시발놀',
+  '병신', '병신새끼', '병신넘', '병신뇬',
+  '개새끼', '개새끼야', '개새끼들', '개새끼들아',
+  '지랄', '지랄하네', '지랄난', '지랄이네',
+  '좀', '좀따', '좀따이', '좀뜨네',
+  '새끼', '새끼야', '새끼들', '새끼들아',
+  '엿먹어', '엿먹어라', '엿먹어요',
+  '스팩', '스패킹', '스패킹하네',
+  '사끼', '사끼넘', '사끼뇬',
+  '소끼', '소끼넘', '소끼뇬',
+  '시끼', '시끼넘', '시끼뇬',
+  '씹끼', '씹끼넘', '씹끼뇬',
+  '성기', '성기새끼', '성기넘',
+  '성노예', '성노예넘', '성노예뇬',
+  '성노예새끼', '성노예새끼들',
+  
+  // 완전한 욕설은 아니지만 부적절한 표현
+  '고자', '고자넘', '고자뇬',
+  '도데기', '도데기넘', '도데기뇬',
+  '도데지', '도데지넘', '도데지뇬',
+  '마이넘', '마이뇬',
+  '머러', '머러넘', '머러뇬',
+  '박아지', '박아지넘', '박아지뇬',
+  '병마', '병마넘', '병마뇬',
+  '사다리', '사다리넘', '사다리뇬',
+  '상놈', '상놈아', '상놈이',
+  '시끼넘', '시끼뇬',
+  '시발넘', '시발뇬',
+  '시발뇼', '시발뇼들',
+  '시발뇼아', '시발뇼이',
+  '시발뇼이네', '시발뇼이다',
+  '시발뇼이라고', '시발뇼이야',
+  '시발뇼이에요', '시발뇼이요',
+  '시발뇼이지', '시발뇼이하',
+  '시발뇼이하고', '시발뇼이하네',
+  '시발뇼이하는', '시발뇼이하니',
+  '시발뇼이하지', '시발뇼이하하',
+  '시발뇼이하하고', '시발뇼이하하네',
+  '시발뇼이하하는', '시발뇼이하하니',
+  '시발뇼이하하지',
+  
+  // 영어 비속어/욕설
+  // 직접적인 욕설
+  'fuck', 'fucking', 'fucked', 'fucker', 'fucks', 'fuckers', 'motherfucker', 'motherfuckers', 'motherfucking',
+  'shit', 'shits', 'shitting', 'shitty', 'shithead', 'shitheads', 'bullshit',
+  'bitch', 'bitches', 'bitching', 'bitchy', 'son of a bitch',
+  'asshole', 'assholes', 'ass', 'asses', 'asshat', 'asswipe',
+  'dick', 'dicks', 'dickhead', 'dickheads',
+  'bastard', 'bastards',
+  'cunt', 'cunts',
+  'whore', 'whores',
+  'slut', 'sluts',
+  'pussy', 'pussies',
+  'cock', 'cocks', 'cocksucker', 'cocksuckers',
+  'jerk', 'jerks', 'jerkoff',
+  'prick', 'pricks',
+  'twat', 'twats',
+  'wanker', 'wankers',
+  'douche', 'douchebag', 'douchebags',
+  
+  // 완전한 욕설은 아니지만 부적절한 표현
+  'idiot', 'idiots', 'stupid', 'dumb', 'moron', 'morons',
+  'retard', 'retarded', 'retards',
+  'loser', 'losers',
+  'screw you', 'screw off',
+  'go to hell',
+  'damn', 'damned',
+  'suck', 'sucks', 'sucking',
+  'wtf', 'stfu', 'gtfo', 'lmao', 'lmfao',
+  'omfg', 'ffs', 'fml', 'smh', 'pos'
 ];
 
 /**
