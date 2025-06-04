@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 import dayjs from 'dayjs'
-import { Pencil } from 'lucide-react'
+import { Pencil, ShoppingBag, Briefcase, Package, PlusCircle, Plane } from 'lucide-react'
 
 type MatchItem = {
   id: string
@@ -146,39 +146,70 @@ export default function Mypage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-text-primary">마이페이지</h1>
+    <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
+      <div className="flex flex-row items-center justify-between mb-2 sm:mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-primary">마이페이지</h1>
         <Button 
           variant="outline" 
           size="sm"
           onClick={() => navigate('/profile')}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1.5 text-sm border border-gray-300 px-3 py-1.5 rounded-md"
         >
-          <Pencil size={14} />
-          회원 정보 관리
+          <Pencil size={15} />
+          프로필 수정
         </Button>
       </div>
 
-      <div className="flex gap-2 border-b pb-2 mt-4">
-        <button
-          className={`px-3 py-1 rounded-t ${tab === 'buyer' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => setTab('buyer')}
-        >
-          바이어용
-        </button>
-        <button
-          className={`px-3 py-1 rounded-t ${tab === 'carrier' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-          onClick={() => setTab('carrier')}
-        >
-          캐리어용
-        </button>
+      <div className="mt-4 sm:mt-6 mb-6 sm:mb-8">
+        <div className="flex border-b overflow-x-auto">
+          <button
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-3 font-medium text-sm transition-all duration-200 relative ${tab === 'buyer' 
+              ? 'text-blue-600' 
+              : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setTab('buyer')}
+          >
+            <ShoppingBag size={18} />
+            <span>바이어용</span>
+            {tab === 'buyer' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
+            )}
+          </button>
+          <button
+            className={`flex flex-1 sm:flex-none items-center justify-center gap-2 px-6 py-3 font-medium text-sm transition-all duration-200 relative ${tab === 'carrier' 
+              ? 'text-blue-600' 
+              : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setTab('carrier')}
+          >
+            <Briefcase size={18} />
+            <span>캐리어용</span>
+            {tab === 'carrier' && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
+            )}
+          </button>
+        </div>
       </div>
 
       {tab === 'buyer' && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-blue-700">내가 올린 요청</h2>
-          {requests.length === 0 && <p className="text-sm text-gray-500">아직 등록한 요청이 없습니다.</p>}
+          {requests.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-8 sm:py-10 px-3 sm:px-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+              <div className="bg-blue-100 p-3 sm:p-4 rounded-full mb-3 sm:mb-4">
+                <Package size={28} className="text-blue-600" />
+              </div>
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">아직 등록한 요청이 없습니다</h3>
+              <p className="text-xs sm:text-sm text-gray-500 text-center mb-4 sm:mb-6 max-w-md">
+                해외에서 구매하고 싶은 물건이 있으신가요? 새로운 요청을 등록하고 캐리어를 찾아보세요.
+              </p>
+              <Button
+                onClick={() => navigate('/request/new')}
+                className="flex items-center gap-1.5 sm:gap-2 text-sm px-3 py-1.5 sm:px-4 sm:py-2"
+              >
+                <PlusCircle size={16} />
+                새 요청 등록하기
+              </Button>
+            </div>
+          )}
           {requests.map((r) => {
             // 캐리어가 선택된 요청인지 확인 (matches 배열에 accepted 상태인 항목이 있는지)
             const hasAcceptedCarrier = r.matches?.some(m => m.status === 'accepted');
@@ -198,7 +229,7 @@ export default function Mypage() {
             return (
               <div
                 key={r.id}
-                className={cardClasses}
+                className={`${cardClasses} transition-all duration-200 hover:shadow-md`}
                 onClick={() => navigate(`/request/manage/${r.id}`)}
               >
                 <div className="flex justify-between items-start">
@@ -278,7 +309,24 @@ export default function Mypage() {
       {tab === 'carrier' && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-blue-700">내 여정 목록</h2>
-          {trips.length === 0 && <p className="text-sm text-gray-500">등록한 여정이 없습니다.</p>}
+          {trips.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-8 sm:py-10 px-3 sm:px-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
+              <div className="bg-blue-100 p-3 sm:p-4 rounded-full mb-3 sm:mb-4">
+                <Plane size={28} className="text-blue-600" />
+              </div>
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">등록한 여정이 없습니다</h3>
+              <p className="text-xs sm:text-sm text-gray-500 text-center mb-4 sm:mb-6 max-w-md">
+                해외 여행 계획이 있으신가요? 여정을 등록하고 수고비를 벌어보세요.
+              </p>
+              <Button
+                onClick={() => navigate('/trip/new')}
+                className="flex items-center gap-1.5 sm:gap-2 text-sm px-3 py-1.5 sm:px-4 sm:py-2"
+              >
+                <PlusCircle size={16} />
+                새 여정 등록하기
+              </Button>
+            </div>
+          )}
           {trips.map((trip) => {
             // 매칭 상태 확인
             const hasAcceptedMatch = trip.matches?.some((m) => m.status === 'accepted')
@@ -295,7 +343,7 @@ export default function Mypage() {
             return (
               <div 
                 key={trip.id} 
-                className={`${cardStyle} cursor-pointer`} 
+                className={`${cardStyle} cursor-pointer transition-all duration-200 hover:shadow-md`} 
                 onClick={() => navigate(`/trip/edit/${trip.id}`)}
               >
                 <div className="flex justify-between items-start">
