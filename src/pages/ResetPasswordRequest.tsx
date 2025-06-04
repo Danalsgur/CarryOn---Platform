@@ -13,11 +13,16 @@ export default function ResetPasswordRequest() {
   const handleSubmit = async () => {
     setMessage('')
     setError('')
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password/update`,
-    })
-    if (error) setError(error.message)
-    else setMessage(`${email}로 재설정 링크를 보냈어요. 메일함을 확인해주세요.`)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password/update`,
+      })
+      if (error) setError(error.message)
+      else setMessage(`${email}로 재설정 링크를 보냈어요. 메일함을 확인해주세요.`)
+    } catch (err) {
+      console.error('비밀번호 재설정 요청 오류:', err)
+      setError('비밀번호 재설정 요청 중 오류가 발생했습니다.')
+    }
   }
 
   return (

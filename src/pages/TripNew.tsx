@@ -16,9 +16,25 @@ export default function TripNew() {
   const [reservationCode, setReservationCode] = useState('')
   const [error, setError] = useState<string | null>(null)
 
+  // PNR 형식 검증 함수 (6자리 알파벳 또는 알파벳+숫자 조합)
+  const validatePNR = (code: string): boolean => {
+    // 6자리 알파벳 또는 알파벳+숫자 조합 정규식
+    const pnrRegex = /^[A-Za-z0-9]{6}$/;
+    // 최소 하나의 알파벳을 포함하는지 확인
+    const hasLetter = /[A-Za-z]/.test(code);
+    
+    return pnrRegex.test(code) && hasLetter;
+  }
+  
   const handleSubmit = async () => {
     if (!departureDate || !reservationCode) {
       setError('출발 날짜와 예약번호는 필수입니다.')
+      return
+    }
+    
+    // PNR 형식 검증
+    if (!validatePNR(reservationCode)) {
+      setError('예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합이어야 합니다.')
       return
     }
 
@@ -107,9 +123,11 @@ export default function TripNew() {
         <Input
           label="예약번호"
           value={reservationCode}
-          setValue={setReservationCode}
-          placeholder="예: AB1234"
+          setValue={(value) => setReservationCode(value.toUpperCase())}
+          placeholder="예: ABC123"
+          maxLength={6}
         />
+        <p className="text-xs text-gray-500">예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합입니다.</p>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 

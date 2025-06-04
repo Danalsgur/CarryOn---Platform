@@ -1,10 +1,81 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import { validateTextInput, ValidationResult } from '../utils/contentFilter'
+import { CountryCode, countryCodes, DEFAULT_COUNTRY_CODE, getCountryByCode } from '../utils/countryCodeData'
+
+// 국가 코드 선택 드롭다운 컴포넌트
+function CountryCodeDropdown({
+  selectedCountry,
+  onSelect,
+}: {
+  selectedCountry: CountryCode;
+  onSelect: (country: CountryCode) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        className="flex items-center justify-between w-full px-4 py-2 border border-gray-300 rounded-control shadow-control bg-white text-sm h-10"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center">
+          <span>{selectedCountry.dialCode}</span>
+          <span className="ml-2 text-gray-600 truncate">{selectedCountry.name}</span>
+        </div>
+        <svg
+          className={`w-4 h-4 transition-transform ml-2 flex-shrink-0 ${isOpen ? 'transform rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+          {countryCodes.map((country) => (
+            <button
+              key={country.code}
+              className={`flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 ${
+                selectedCountry.code === country.code ? 'bg-gray-50' : ''
+              }`}
+              onClick={() => {
+                onSelect(country);
+                setIsOpen(false);
+              }}
+            >
+              <span className="w-10 inline-block">{country.dialCode}</span>
+              <span className="text-gray-600">{country.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProfileSetup() {
   const navigate = useNavigate()
@@ -13,6 +84,9 @@ export default function ProfileSetup() {
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
   const [phone, setPhone] = useState('')
+  const [countryCode, setCountryCode] = useState<CountryCode>(
+    getCountryByCode(DEFAULT_COUNTRY_CODE) || countryCodes[0]
+  )
   const [error, setError] = useState<string | null>(null)
   
   // 입력 필드별 유효성 검사 결과
@@ -103,7 +177,7 @@ export default function ProfileSetup() {
         name,
         nickname,
         phone,
-        country_code: 'KR',
+        country_code: countryCode.code,
       })
       .eq('id', user.id)
 
@@ -119,7 +193,7 @@ export default function ProfileSetup() {
         name,
         nickname,
         phone,
-        country_code: 'KR',
+        country_code: countryCode.code,
       }
 
       setProfile(updatedProfile)
@@ -164,18 +238,37 @@ export default function ProfileSetup() {
             <p className="text-danger text-xs mt-1">{nicknameValidation.errorMessage}</p>
           )}
           
-          <Input 
-            label="전화번호" 
-            value={phone} 
-            setValue={setPhone} 
-            placeholder="'-' 없이 숫자만 입력"
-            rightElement={
-              phone ? <span className="text-xs text-text-secondary">{phone.length}/{MAX_PHONE_LENGTH}</span> : undefined
-            }
-          />
-          {phoneValidation.errorMessage && (
-            <p className="text-danger text-xs mt-1">{phoneValidation.errorMessage}</p>
-          )}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-text-primary">전화번호</label>
+            <div className="flex items-center space-x-2">
+              <div className="w-1/3">
+                <CountryCodeDropdown
+                  selectedCountry={countryCode}
+                  onSelect={setCountryCode}
+                />
+              </div>
+              <div className="flex-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="'-' 없이 숫자만 입력"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
+                  />
+                  {phone && (
+                    <div className="absolute inset-y-0 right-4 flex items-center text-text-muted">
+                      <span className="text-xs text-text-secondary">{phone.length}/{MAX_PHONE_LENGTH}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {phoneValidation.errorMessage && (
+              <p className="text-danger text-xs mt-1">{phoneValidation.errorMessage}</p>
+            )}
+          </div>
+
         </div>
 
         {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}

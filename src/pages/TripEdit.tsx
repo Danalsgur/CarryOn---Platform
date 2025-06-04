@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
+import Input from '../components/Input'
 import { AlertCircle } from 'lucide-react'
 
 const DESTINATIONS = ['런던', '뉴욕', '파리']
@@ -17,6 +18,16 @@ export default function TripEdit() {
   const [loading, setLoading] = useState(true)
   const [hasMatch, setHasMatch] = useState(false)
   const [matchDetails, setMatchDetails] = useState<any>(null)
+  
+  // PNR 형식 검증 함수 (6자리 알파벳 또는 알파벳+숫자 조합)
+  const validatePNR = (code: string): boolean => {
+    // 6자리 알파벳 또는 알파벳+숫자 조합 정규식
+    const pnrRegex = /^[A-Za-z0-9]{6}$/;
+    // 최소 하나의 알파벳을 포함하는지 확인
+    const hasLetter = /[A-Za-z]/.test(code);
+    
+    return pnrRegex.test(code) && hasLetter;
+  }
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -76,6 +87,12 @@ export default function TripEdit() {
   const handleUpdate = async () => {
     if (!departureDate || !reservationCode) {
       setError('출발 날짜와 예약번호는 필수입니다.')
+      return
+    }
+    
+    // PNR 형식 검증
+    if (!validatePNR(reservationCode)) {
+      setError('예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합이어야 합니다.')
       return
     }
     
@@ -187,19 +204,15 @@ export default function TripEdit() {
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium text-text-primary">
-            예약번호
-          </label>
-          <input
-            type="text"
-            value={reservationCode}
-            onChange={(e) => setReservationCode(e.target.value)}
-            placeholder="예: AB1234"
-            disabled={hasMatch}
-            className={`w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 ${hasMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-          />
-        </div>
+        <Input
+          label="예약번호"
+          value={reservationCode}
+          setValue={(value) => setReservationCode(value.toUpperCase())}
+          placeholder="예: ABC123"
+          maxLength={6}
+          disabled={hasMatch}
+        />
+        {!hasMatch && <p className="text-xs text-gray-500 -mt-3 mb-3">예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합입니다.</p>}
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 

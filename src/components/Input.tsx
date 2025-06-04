@@ -5,6 +5,8 @@ type InputProps = {
   type?: string
   placeholder?: string
   rightElement?: React.ReactNode
+  maxLength?: number
+  disabled?: boolean
 }
 
 export default function Input({
@@ -14,6 +16,8 @@ export default function Input({
   type = 'text',
   placeholder,
   rightElement,
+  maxLength,
+  disabled = false,
 }: InputProps) {
   return (
     <div className="mb-4">
@@ -26,7 +30,9 @@ export default function Input({
           value={value}
           placeholder={placeholder}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
+          maxLength={maxLength}
+          disabled={disabled}
+          className={`w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
         />
         {rightElement && (
           <div className="absolute inset-y-0 right-4 flex items-center text-text-muted">
