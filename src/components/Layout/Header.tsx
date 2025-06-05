@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import Button from '../../components/Button'
-import { User, Settings, Package, Plane, LogOut, ChevronRight, Home, Menu, X, Bell } from 'lucide-react'
+import { User, Package, Plane, LogOut, ChevronRight, Home, Menu, X, Bell } from 'lucide-react'
 import { getNotifications, getUnreadNotificationsCount, markNotificationAsRead, markAllNotificationsAsRead } from '../../utils/notifications'
 
 export default function Header() {
@@ -16,6 +16,18 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const notificationRef = useRef<HTMLDivElement>(null)
+  
+  // 모바일 메뉴가 열렸을 때 body 스크롤 방지
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -281,33 +293,54 @@ export default function Header() {
         )}
       </nav>
 
-      {/* 모바일 메뉴 버튼 */}
-      <button 
-        className="md:hidden flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200"
-        onClick={() => setMobileMenuOpen(prev => !prev)}
-      >
-        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+      {/* 모바일 영역 버튼들 */}
+      <div className="md:hidden flex items-center gap-2">
+        {/* 모바일 알림 버튼 */}
+        {user && (
+          <button
+            className="flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200 relative"
+            onClick={() => setNotificationOpen(prev => !prev)}
+            title="알림"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        )}
+        
+        {/* 모바일 메뉴 버튼 */}
+        <button 
+          className="flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200"
+          onClick={() => setMobileMenuOpen(prev => !prev)}
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
 
-      {/* 모바일 메뉴 */}
+      {/* 모바일 메뉴 - 화면 전체를 차지하도록 변경 */}
       {mobileMenuOpen && (
         <div 
           ref={mobileMenuRef}
-          className="fixed inset-0 z-50 bg-white md:hidden transition-transform duration-300 ease-in-out"
-          style={{ top: '60px' }}
+          className="fixed inset-0 z-50 bg-white md:hidden transition-all duration-300 ease-in-out flex flex-col"
         >
-          <div className="p-4 space-y-6 max-h-[calc(100vh-60px)] overflow-y-auto">
-            {user && (
-              <div className="flex items-center gap-3 p-4 bg-brand/5 rounded-layout">
-                <div className="w-12 h-12 rounded-full bg-brand text-white font-semibold flex items-center justify-center text-lg">
-                  {(profile?.nickname?.[0] || 'M').toUpperCase()}
-                </div>
-                <div>
-                  <p className="font-medium text-text-primary">{profile?.nickname || '프로필'}</p>
-                  <p className="text-xs text-text-muted truncate">{user.email}</p>
-                </div>
-              </div>
-            )}
+          {/* 모바일 메뉴 헤더 */}
+          <div className="flex justify-between items-center px-4 py-4 border-b bg-surface shadow-sm">
+            <Link to="/" className="text-xl font-bold text-brand-dark" onClick={() => setMobileMenuOpen(false)}>
+              CarryOn
+            </Link>
+            <button 
+              className="flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          {/* 모바일 메뉴 콘텐츠 */}
+          <div className="p-4 space-y-6 flex-1 overflow-y-auto">
 
             <div className="space-y-1">
               <Link 
@@ -333,14 +366,6 @@ export default function Header() {
               >
                 <User size={20} />
                 마이페이지
-              </Link>
-              <Link 
-                to="/profile" 
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-control hover:bg-brand-light/20 transition-colors duration-200 text-text-primary"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Settings size={20} />
-                회원 정보 관리
               </Link>
             </div>
 
