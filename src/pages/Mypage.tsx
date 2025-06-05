@@ -5,15 +5,21 @@ import { supabase } from '../supabase'
 import Button from '../components/Button'
 import dayjs from 'dayjs'
 import { Pencil, ShoppingBag, Briefcase, Package, PlusCircle, Plane } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 type MatchItem = {
   id: string
   status?: string
+  user_id?: string
+  created_at?: string
+  profiles?: { nickname?: string } | null
   request: {
     id: string
     title: string
     reward: number
     currency: string
+    user_id?: string
+    profiles?: { nickname?: string } | null
   } | null
 }
 
@@ -106,11 +112,16 @@ export default function Mypage() {
           matches (
             id,
             status,
+            user_id,
+            created_at,
+            profiles:profiles!user_id(nickname),
             request:request_id (
               id,
               title,
               reward,
-              currency
+              currency,
+              user_id,
+              profiles:profiles!user_id(nickname)
             )
           )
         `)
@@ -119,13 +130,29 @@ export default function Mypage() {
         .order('created_at', { ascending: false })
 
       if (data) {
+        console.log('Raw trip data:', data);
         const normalized: Trip[] = data.map((trip): Trip => ({
           ...trip,
-          matches: trip.matches.map((match): MatchItem => ({
-            ...match,
-            request: Array.isArray(match.request) ? match.request[0] : match.request,
-          })),
-        }))
+          matches: trip.matches.map((match): MatchItem => {
+            console.log('Match data:', match);
+            return {
+              ...match,
+              // 요청 정보 정규화
+              request: Array.isArray(match.request) ? {
+                ...match.request[0],
+                // request.profiles도 정규화
+                profiles: Array.isArray(match.request[0]?.profiles) 
+                  ? match.request[0]?.profiles[0] || null
+                  : match.request[0]?.profiles || null
+              } : match.request,
+              // 프로필 정보 정규화
+              profiles: Array.isArray(match.profiles)
+                ? (match.profiles[0] as { nickname?: string } | null) ?? null
+                : match.profiles ?? null
+            };
+          }),
+        }));
+        console.log('Normalized trip data:', normalized);
         setTrips(normalized)
       }
     }
@@ -213,8 +240,8 @@ export default function Mypage() {
           {requests.map((r) => {
             // 캐리어가 선택된 요청인지 확인 (matches 배열에 accepted 상태인 항목이 있는지)
             const hasAcceptedCarrier = r.matches?.some(m => m.status === 'accepted');
-            // 캐리어 지원자가 있는지 확인
-            const hasApplicants = r.matches?.length > 0;
+            // 캐리어 지원자가 있는지 확인 (pending 상태인 매칭만 포함)
+            const hasApplicants = r.matches?.some(m => m.status === 'pending');
             
             // 요청 상태에 따른 배경색과 테두리 색상 결정
             let cardClasses = "p-4 border rounded-lg shadow-sm space-y-1 cursor-pointer";
@@ -330,6 +357,7 @@ export default function Mypage() {
           {trips.map((trip) => {
             // 매칭 상태 확인
             const hasAcceptedMatch = trip.matches?.some((m) => m.status === 'accepted')
+            // pending 상태인 매칭만 지원자 있음으로 표시 (cancelled 상태는 제외)
             const hasPendingMatch = trip.matches?.some((m) => m.status === 'pending')
             
             // 카드 스타일 결정
@@ -341,13 +369,13 @@ export default function Mypage() {
             }
 
             return (
-              <div 
-                key={trip.id} 
-                className={`${cardStyle} cursor-pointer transition-all duration-200 hover:shadow-md`} 
+              <div
+                key={trip.id}
+                className={cardStyle}
                 onClick={() => navigate(`/trip/edit/${trip.id}`)}
               >
                 <div className="flex justify-between items-start">
-                  <div className="font-bold text-lg text-blue-800">{trip.to_city}행 여정</div>
+                  <div className="font-bold text-lg text-blue-800 cursor-pointer hover:text-blue-600 transition-colors duration-150 ease-in-out py-1">{trip.to_city}행 여정</div>
                   {/* 상태 배지 */}
                   <div className="inline-flex items-center">
                     {hasAcceptedMatch ? (
@@ -369,9 +397,9 @@ export default function Mypage() {
                   </div>
                 </div>
                 
-                <div className="text-sm text-gray-600 mt-2">출발: {dayjs(trip.departure_date).format('YYYY-MM-DD')}</div>
+                <div className="text-sm text-gray-600 mt-2 mb-3 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors duration-150 ease-in-out -mx-2">출발: {dayjs(trip.departure_date).format('YYYY-MM-DD')}</div>
                 
-                {/* 매칭된 요청 정보 표시 - 모든 매칭 표시 */}
+                {/* 매칭된 요청 정보 표시 */}
                 {hasAcceptedMatch && (() => {
                   const acceptedMatches = trip.matches.filter(m => m.status === 'accepted' && m.request);
                   if (acceptedMatches.length === 0) return null;
@@ -382,27 +410,71 @@ export default function Mypage() {
                   }, 0);
                   
                   return (
-                    <div className="mt-2 text-sm border-t pt-2 border-green-200 space-y-2">
+                    <div className="mt-2 text-sm space-y-2 bg-green-50 p-3 rounded-lg border border-green-200">
                       {/* 총 수고비 표시 */}
-                      <div className="flex justify-between items-center font-medium text-green-800 bg-green-50 p-2 rounded">
+                      <div className="flex justify-between items-center font-medium text-green-800 border-b border-green-200 pb-2 mb-2">
                         <span>총 수고비</span>
-                        <span>{totalReward.toLocaleString()}원</span>
+                        <span className="text-lg">{totalReward.toLocaleString()}원</span>
                       </div>
                       
                       {/* 매칭된 요청 목록 */}
                       <div className="space-y-1.5">
+                        <div className="text-sm font-medium mb-1">매칭된 요청:</div>
                         {acceptedMatches.map((match, index) => (
-                          <div key={match.id} className="flex items-center justify-between">
-                            <a 
-                              href={`/request/${match.request?.id}`} 
-                              className="text-blue-600 hover:underline font-medium truncate max-w-[70%]"
+                          <div key={match.id} className="flex items-center justify-between mb-2">
+                            <Link 
+                              to={`/request/${match.request?.id}`} 
+                              className="text-blue-600 hover:bg-blue-100 font-medium truncate max-w-[70%] px-3 py-2 rounded-md flex items-center transition-colors duration-150 ease-in-out flex-grow mr-2"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {index + 1}. {match.request?.title}
-                            </a>
-                            <span className="text-sm font-medium text-green-700">
+                              <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 inline-flex items-center justify-center mr-2 text-xs">{index + 1}</span>
+                              <span className="truncate">{match.request?.title}</span>
+                            </Link>
+                            <span className="text-sm font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
                               {match.request?.reward.toLocaleString()}원
                             </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* 신청 중인 요청 정보 표시 */}
+                {hasPendingMatch && (() => {
+                  const pendingMatches = trip.matches.filter(m => m.status === 'pending' && m.request);
+                  console.log('Pending matches:', pendingMatches);
+                  if (pendingMatches.length === 0) return null;
+                  
+                  return (
+                    <div className="mt-2 text-sm space-y-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <div className="text-sm font-medium text-blue-800 mb-1">신청 중인 요청 ({pendingMatches.length}개):</div>
+                      <div className="space-y-1.5">
+                        {pendingMatches.map((match) => (
+                          <div key={match.id} className="flex flex-col bg-blue-50 p-3 rounded mb-2">
+                            <div className="flex items-center justify-between">
+                              <Link 
+                                to={`/request/${match.request?.id}`} 
+                                className="text-blue-700 hover:bg-blue-200 font-medium truncate max-w-[70%] px-3 py-2 rounded-md flex items-center transition-colors duration-150 ease-in-out flex-grow mr-2"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="bg-blue-200 text-blue-800 rounded-md px-2 py-1 mr-2 text-xs font-medium">신청중</span>
+                                <span className="truncate">{match.request?.title}</span>
+                              </Link>
+                              <span className="text-sm font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                                {match.request?.reward.toLocaleString()}원
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1 flex items-center">
+                              <span className="mr-1">요청자:</span>
+                              <span className="font-medium">
+                                {match.request?.profiles?.nickname || '이름 없음'}
+                              </span>
+                              <span className="mx-1 text-gray-400">•</span>
+                              <span className="text-gray-500">
+                                {match.created_at ? new Date(match.created_at).toLocaleDateString() : ''}
+                              </span>
+                            </div>
                           </div>
                         ))}
                       </div>

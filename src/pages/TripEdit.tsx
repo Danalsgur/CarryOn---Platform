@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Trash2 } from 'lucide-react'
 
 const DESTINATIONS = ['런던', '뉴욕', '파리']
 
@@ -18,6 +18,8 @@ export default function TripEdit() {
   const [loading, setLoading] = useState(true)
   const [hasMatch, setHasMatch] = useState(false)
   const [matchDetails, setMatchDetails] = useState<any>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
   
   // PNR 형식 검증 함수 (6자리 알파벳 또는 알파벳+숫자 조합)
   const validatePNR = (code: string): boolean => {
@@ -97,7 +99,7 @@ export default function TripEdit() {
     }
     
     // 매칭된 요청이 있는 경우 수정 불가
-    if (hasMatch) {
+    if (hasMatch && matchDetails?.status === 'accepted') {
       setError('매칭된 요청이 있는 여정은 수정할 수 없습니다.')
       return
     }
@@ -123,6 +125,40 @@ export default function TripEdit() {
     }
   }
 
+  // 여정 삭제 처리 함수
+  const handleDelete = async () => {
+    if (!id) return
+    
+    // 매칭된 요청이 있는 경우 삭제 불가 (수락된 매칭 또는 신청 중인 매칭 모두 포함)
+    if (hasMatch || matchDetails?.pendingCount > 0) {
+      setError('매칭 중인 요청이 있는 여정은 삭제할 수 없습니다. 먼저 모든 신청을 취소해주세요.')
+      setShowDeleteConfirm(false)
+      return
+    }
+    
+    setDeleteLoading(true)
+    
+    try {
+      
+      // 여정 삭제
+      const { error } = await supabase
+        .from('trips')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        setError(error.message)
+        setDeleteLoading(false)
+      } else {
+        navigate('/mypage', { replace: true })
+      }
+    } catch (err) {
+      console.error('여정 삭제 오류:', err)
+      setError('여정 삭제 중 오류가 발생했습니다.')
+      setDeleteLoading(false)
+    }
+  }
+  
   if (loading) return <div className="p-4">불러오는 중...</div>
 
   return (
@@ -214,24 +250,76 @@ export default function TripEdit() {
         />
         {!hasMatch && <p className="text-xs text-gray-500 -mt-3 mb-3">예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합입니다.</p>}
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <Button 
-          onClick={handleUpdate} 
-          disabled={hasMatch}
-          variant={hasMatch ? 'outline' : 'default'}
-          className={hasMatch ? 'opacity-50 cursor-not-allowed' : ''}
-        >
-          {hasMatch ? '수정 불가' : '수정 완료'}
-        </Button>
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start mb-4">
+            <AlertCircle className="shrink-0 w-5 h-5 mr-2 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
         
-        <Button 
-          variant="outline" 
-          className="mt-2 w-full"
-          onClick={() => navigate('/mypage')}
-        >
-          마이페이지로 돌아가기
-        </Button>
+        {/* 버튼 그룹 */}
+        <div className="mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            {/* 마이페이지로 돌아가기 버튼 */}
+            <Button 
+              variant="outline" 
+              className="sm:order-1 py-2.5 w-full"
+              onClick={() => navigate('/mypage')}
+            >
+              마이페이지로 돌아가기
+            </Button>
+            
+            {/* 수정 완료 버튼 */}
+            <Button 
+              onClick={handleUpdate}
+              className="sm:order-2 py-2.5 w-full" 
+              disabled={hasMatch || loading}
+            >
+              {hasMatch ? '수정 불가' : '수정 완료'}
+            </Button>
+          </div>
+          
+          {/* 삭제 버튼 - 매칭 중인 요청이 하나도 없을 때만 활성화 */}
+          {(!hasMatch && !matchDetails?.pendingCount) && (
+            <Button 
+              variant="destructive" 
+              className="w-full flex items-center justify-center gap-1 py-2.5 mt-2"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 size={16} />
+              여정 삭제하기
+            </Button>
+          )}
+        </div>
+        
+        {/* 삭제 확인 모달 */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+              <h3 className="text-lg font-bold mb-2">여정 삭제 확인</h3>
+              <p className="text-gray-700 mb-4">
+                정말 이 여정을 삭제하시겠습니까?
+              </p>
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleteLoading}
+                >
+                  취소
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={handleDelete}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? '삭제 중...' : '삭제하기'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

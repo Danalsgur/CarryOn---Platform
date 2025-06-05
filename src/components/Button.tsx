@@ -5,7 +5,7 @@ import clsx from 'clsx'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg'
-  variant?: 'default' | 'outline'
+  variant?: 'default' | 'outline' | 'destructive'
   loading?: boolean
 }
 
@@ -28,6 +28,7 @@ export default function Button({
   const variantStyle = {
     default: 'bg-brand text-white hover:bg-brand-dark active:bg-brand-dark/90',
     outline: 'border border-brand text-brand hover:bg-brand-light/20 active:bg-brand-light/30',
+    destructive: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
   }[variant]
 
   return (
