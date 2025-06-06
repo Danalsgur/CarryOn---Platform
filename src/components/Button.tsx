@@ -2,6 +2,7 @@
 
 import { ButtonHTMLAttributes } from 'react'
 import clsx from 'clsx'
+import Spinner from './Spinner'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: 'sm' | 'md' | 'lg'
@@ -45,7 +46,7 @@ export default function Button({
     >
       {loading ? (
         <div className="flex items-center justify-center">
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+          <Spinner size="sm" color="white" className="mr-2" />
           {children}
         </div>
       ) : (

@@ -116,7 +116,7 @@ export default function Header() {
         </Link>
         
         {user && (
-          <div className="relative" ref={notificationRef}>
+          <div className="relative">
             <button
               className="hover:text-brand transition-colors duration-200 flex items-center gap-1 relative"
               onClick={() => setNotificationOpen(prev => !prev)}
@@ -129,57 +129,6 @@ export default function Header() {
                 </span>
               )}
             </button>
-
-            {notificationOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-surface border border-gray-200 rounded-layout shadow-card z-50 overflow-hidden transition-all duration-300 ease-in-out">
-                {/* 알림 헤더 */}
-                <div className="bg-brand/5 p-3 border-b border-gray-200 flex justify-between items-center">
-                  <p className="font-medium text-text-primary">알림</p>
-                  {unreadCount > 0 && (
-                    <button 
-                      onClick={handleMarkAllAsRead}
-                      className="text-xs text-brand hover:text-brand-dark transition-colors duration-200"
-                    >
-                      모두 읽음 표시
-                    </button>
-                  )}
-                </div>
-
-                {/* 알림 목록 */}
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-4 text-center text-text-muted">
-                      알림이 없습니다
-                    </div>
-                  ) : (
-                    notifications.map(notification => (
-                      <div 
-                        key={notification.id}
-                        onClick={() => handleNotificationClick(notification.id, notification.link)}
-                        className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${!notification.is_read ? 'bg-brand/5' : ''}`}
-                      >
-                        <div className="flex items-start gap-2">
-                          <div className={`w-2 h-2 rounded-full mt-1.5 ${!notification.is_read ? 'bg-brand' : 'bg-gray-300'}`} />
-                          <div>
-                            <p className="text-sm font-medium text-text-primary">{notification.title}</p>
-                            <p className="text-xs text-text-secondary mt-1">{notification.message}</p>
-                            <p className="text-xs text-text-muted mt-1">
-                              {new Date(notification.created_at).toLocaleString('ko-KR', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -297,18 +246,71 @@ export default function Header() {
       <div className="md:hidden flex items-center gap-2">
         {/* 모바일 알림 버튼 */}
         {user && (
-          <button
-            className="flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200 relative"
-            onClick={() => setNotificationOpen(prev => !prev)}
-            title="알림"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
+          <div className="relative" ref={notificationRef}>
+            <button
+              className="flex items-center justify-center w-10 h-10 text-text-secondary hover:text-brand transition-colors duration-200 relative"
+              onClick={() => setNotificationOpen(prev => !prev)}
+              title="알림"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            
+            {notificationOpen && (
+              <div className="fixed top-[4rem] right-2 w-80 max-w-[calc(100vw-1rem)] bg-surface border border-gray-200 rounded-layout shadow-card z-[1000] overflow-hidden transition-all duration-300 ease-in-out">
+                {/* 알림 헤더 */}
+                <div className="bg-brand/5 p-3 border-b border-gray-200 flex justify-between items-center">
+                  <p className="font-medium text-text-primary">알림</p>
+                  {unreadCount > 0 && (
+                    <button 
+                      onClick={handleMarkAllAsRead}
+                      className="text-xs text-brand hover:text-brand-dark transition-colors duration-200"
+                    >
+                      모두 읽음 표시
+                    </button>
+                  )}
+                </div>
+
+                {/* 알림 목록 */}
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-text-muted">
+                      알림이 없습니다
+                    </div>
+                  ) : (
+                    notifications.map(notification => (
+                      <div 
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification.id, notification.link)}
+                        className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${!notification.is_read ? 'bg-brand/5' : ''}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className={`w-2 h-2 rounded-full mt-1.5 ${!notification.is_read ? 'bg-brand' : 'bg-gray-300'}`} />
+                          <div>
+                            <p className="text-sm font-medium text-text-primary">{notification.title}</p>
+                            <p className="text-xs text-text-secondary mt-1">{notification.message}</p>
+                            <p className="text-xs text-text-muted mt-1">
+                              {new Date(notification.created_at).toLocaleString('ko-KR', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             )}
-          </button>
+          </div>
         )}
         
         {/* 모바일 메뉴 버튼 */}
