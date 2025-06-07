@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
-import Input from '../components/Input'
 import Button from '../components/Button'
 import { validateTextInput } from '../utils/contentFilter'
 import { AlertCircle } from 'lucide-react'
@@ -366,8 +365,27 @@ export default function RequestEdit() {
           )}
         </div>
 
-        <Input label="1:1 오픈채팅 링크" value={chatUrl} setValue={setChatUrl} />
-        <Input label="설명 (선택)" value={description} setValue={setDescription} />
+        <div className="mb-4">
+          <label className="block mb-2 text-sm font-medium text-text-primary">1:1 오픈채팅 링크</label>
+          <input
+            type="text"
+            value={chatUrl}
+            onChange={(e) => setChatUrl(e.target.value)}
+            placeholder="카카오톡 오픈채팅 링크를 입력하세요"
+            className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
+          />
+        </div>
+        
+        <div className="mb-4">
+          <label className="block mb-2 text-sm font-medium text-text-primary">설명 (선택)</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="추가 설명이 필요하면 입력하세요"
+            className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
+            rows={3}
+          />
+        </div>
 
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 

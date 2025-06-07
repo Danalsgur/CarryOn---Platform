@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
-import Input from '../components/Input'
 import Button from '../components/Button'
 import { validateTextInput, ValidationResult } from '../utils/contentFilter'
 
@@ -136,47 +135,95 @@ export default function ProfileEdit() {
         <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">프로필 수정</h2>
 
         <div className="space-y-4">
-          <Input 
-            label="이름" 
-            value={name} 
-            setValue={setName} 
-            placeholder="실명을 입력해주세요"
-            rightElement={
-              name ? <span className="text-xs text-text-secondary">{name.length}/{MAX_NAME_LENGTH}</span> : undefined
-            }
-            maxLength={MAX_NAME_LENGTH}
-          />
-          {nameValidation.errorMessage && (
-            <p className="text-danger text-xs mt-1">{nameValidation.errorMessage}</p>
-          )}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-text-primary">이름</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setName(newValue);
+                  // 실시간 유효성 검사
+                  if (newValue) {
+                    const validation = validateTextInput(newValue, MAX_NAME_LENGTH, '이름');
+                    setNameValidation(validation);
+                  } else {
+                    setNameValidation({ isValid: true });
+                  }
+                }}
+                placeholder="실명을 입력해주세요"
+                maxLength={MAX_NAME_LENGTH}
+                className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${nameValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
+              />
+              <div className="absolute inset-y-0 right-4 flex items-center text-text-muted">
+                <span className="text-xs text-text-secondary">{name.length}/{MAX_NAME_LENGTH}</span>
+              </div>
+            </div>
+            {nameValidation.errorMessage && (
+              <p className="text-danger text-xs mt-1">{nameValidation.errorMessage}</p>
+            )}
+          </div>
           
-          <Input 
-            label="닉네임" 
-            value={nickname} 
-            setValue={setNickname} 
-            placeholder="서비스에서 사용할 닉네임"
-            rightElement={
-              nickname ? <span className="text-xs text-text-secondary">{nickname.length}/{MAX_NICKNAME_LENGTH}</span> : undefined
-            }
-            maxLength={MAX_NICKNAME_LENGTH}
-          />
-          {nicknameValidation.errorMessage && (
-            <p className="text-danger text-xs mt-1">{nicknameValidation.errorMessage}</p>
-          )}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-text-primary">닉네임</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setNickname(newValue);
+                  // 실시간 유효성 검사
+                  if (newValue) {
+                    const validation = validateTextInput(newValue, MAX_NICKNAME_LENGTH, '닉네임');
+                    setNicknameValidation(validation);
+                  } else {
+                    setNicknameValidation({ isValid: true });
+                  }
+                }}
+                placeholder="서비스에서 사용할 닉네임"
+                maxLength={MAX_NICKNAME_LENGTH}
+                className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${nicknameValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
+              />
+              <div className="absolute inset-y-0 right-4 flex items-center text-text-muted">
+                <span className="text-xs text-text-secondary">{nickname.length}/{MAX_NICKNAME_LENGTH}</span>
+              </div>
+            </div>
+            {nicknameValidation.errorMessage && (
+              <p className="text-danger text-xs mt-1">{nicknameValidation.errorMessage}</p>
+            )}
+          </div>
           
-          <Input 
-            label="전화번호" 
-            value={phone} 
-            setValue={setPhone} 
-            placeholder="'-' 없이 숫자만 입력"
-            rightElement={
-              phone ? <span className="text-xs text-text-secondary">{phone.length}/{MAX_PHONE_LENGTH}</span> : undefined
-            }
-            maxLength={MAX_PHONE_LENGTH}
-          />
-          {phoneValidation.errorMessage && (
-            <p className="text-danger text-xs mt-1">{phoneValidation.errorMessage}</p>
-          )}
+          <div className="mb-4">
+            <label className="block mb-2 text-sm font-medium text-text-primary">전화번호</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => {
+                  const newValue = e.target.value;
+                  setPhone(newValue);
+                  // 실시간 유효성 검사
+                  if (newValue) {
+                    const validation = validateTextInput(newValue, MAX_PHONE_LENGTH, '전화번호');
+                    setPhoneValidation(validation);
+                  } else {
+                    setPhoneValidation({ isValid: true });
+                  }
+                }}
+                placeholder="'-' 없이 숫자만 입력"
+                maxLength={MAX_PHONE_LENGTH}
+                className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${phoneValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
+              />
+              <div className="absolute inset-y-0 right-4 flex items-center text-text-muted">
+                <span className="text-xs text-text-secondary">{phone.length}/{MAX_PHONE_LENGTH}</span>
+              </div>
+            </div>
+            {phoneValidation.errorMessage && (
+              <p className="text-danger text-xs mt-1">{phoneValidation.errorMessage}</p>
+            )}
+          </div>
         </div>
 
         {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
