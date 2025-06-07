@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../supabase'
 import Input from '../components/Input'
 import Button from '../components/Button'
+import { validateTextInput } from '../utils/contentFilter'
+import { AlertCircle } from 'lucide-react'
 import { addDays, format, parseISO } from 'date-fns'
 import { CalendarIcon, X } from 'lucide-react'
 import { DateRange, RangeKeyDict } from 'react-date-range'
@@ -32,6 +34,7 @@ export default function RequestEdit() {
   const [loading, setLoading] = useState(true)
 
   const [title, setTitle] = useState('')
+  const [titleError, setTitleError] = useState<string | null>(null)
   const [destination, setDestination] = useState(CITIES[0])
   const [currency, setCurrency] = useState('KRW')
   const [reward, setReward] = useState('')
@@ -48,6 +51,20 @@ export default function RequestEdit() {
   const [error, setError] = useState<string | null>(null)
   const [showCalendar, setShowCalendar] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
+
+  // 제목 입력 유효성 검사
+  useEffect(() => {
+    if (title) {
+      if (title.length > 10) {
+        setTitleError(`요청 제목은 10자를 초과할 수 없습니다. (현재: ${title.length}자)`);
+      } else {
+        const validation = validateTextInput(title, 10, '요청 제목');
+        setTitleError(validation.isValid ? null : (validation.errorMessage || null));
+      }
+    } else {
+      setTitleError(null);
+    }
+  }, [title]);
 
   useEffect(() => {
     const fetchRequest = async () => {
@@ -120,8 +137,19 @@ export default function RequestEdit() {
   }
 
   const handleSubmit = async () => {
-    if (!title || !reward || Number(reward.replace(/,/g, '')) < 10000) {
-      setError('모든 필수 항목을 입력했는지, 수고비가 15,000원 이상인지 확인해주세요.')
+    if (!title) {
+      setError('요청 제목을 입력해주세요.')
+      return
+    }
+
+    const titleValidation = validateTextInput(title, 10, '요청 제목')
+    if (!titleValidation.isValid) {
+      setError(titleValidation.errorMessage || '요청 제목이 유효하지 않습니다.')
+      return
+    }
+
+    if (!reward || Number(reward.replace(/,/g, '')) < 10000) {
+      setError('수고비는 최소 10,000원 이상이어야 합니다.')
       return
     }
 
@@ -149,7 +177,31 @@ export default function RequestEdit() {
       <h1 className="text-2xl font-bold mb-6 text-text-primary">요청 수정</h1>
 
       <div className="space-y-4">
-        <Input label="요청 제목" value={title} setValue={setTitle} />
+        <div className="mb-4">
+          <label className="block mb-1 text-sm font-medium text-text-primary">요청 제목</label>
+          <div className="relative">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => {
+                const newTitle = e.target.value;
+                setTitle(newTitle);
+              }}
+              maxLength={10}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${titleError ? 'border-red-300 focus:border-red-300 focus:ring-red-200' : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
+              placeholder="요청 제목을 입력하세요"
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span className="text-xs text-text-secondary">{title.length}/10</span>
+            </div>
+          </div>
+          {titleError && (
+            <div className="flex items-center mt-1 text-red-500">
+              <AlertCircle size={14} className="mr-1" />
+              <p className="text-xs">{titleError}</p>
+            </div>
+          )}
+        </div>
 
         <div>
           <label className="block mb-1 text-sm font-medium text-text-primary">도착 도시</label>
