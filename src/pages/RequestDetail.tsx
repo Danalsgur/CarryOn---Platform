@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../supabase'
 import Button from '../components/Button'
 
@@ -25,6 +26,7 @@ type Request = {
 }
 
 export default function RequestDetail() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation() // ✅ 현재 경로 파악용
@@ -96,13 +98,13 @@ export default function RequestDetail() {
 
   const handleApply = async () => {
     if (!hasTrip) {
-      alert('여정을 먼저 등록해야 캐리어로 지원할 수 있어요.')
+      alert(t('request.registerTripFirst'))
       navigate('/trip/new')
       return
     }
     
     if (isRequestMatched) {
-      alert('이미 매칭이 완료된 요청입니다.')
+      alert(t('request.alreadyMatched'))
       return
     }
 
@@ -118,7 +120,7 @@ export default function RequestDetail() {
       .single()
 
     if (!myTrip) {
-      alert('여정을 먼저 등록해야 캐리어로 지원할 수 있어요.')
+      alert(t('request.registerTripFirst'))
       navigate('/trip/new')
       return
     }
@@ -131,7 +133,7 @@ export default function RequestDetail() {
       .single()
       
     if (currentRequest?.status === 'matched') {
-      alert('이미 매칭이 완료된 요청입니다.')
+      alert(t('request.alreadyMatched'))
       setIsRequestMatched(true)
       return
     }
@@ -159,7 +161,7 @@ export default function RequestDetail() {
       // 알림은 데이터베이스 트리거를 통해 자동으로 생성됨
     }
 
-    alert('지원 완료! 아래 오픈채팅 링크를 통해 바이어에게 먼저 연락해보세요.')
+    alert(t('request.applicationSuccessful'))
     setMatchStatus('pending')
   }
 
@@ -174,7 +176,7 @@ export default function RequestDetail() {
       .maybeSingle()
 
     if (!match) {
-      alert('취소할 매칭이 없습니다.')
+      alert(t('request.noMatchingToCancel'))
       return
     }
 
@@ -184,9 +186,9 @@ export default function RequestDetail() {
       .eq('id', match.id)
 
     if (error) {
-      alert('지원 취소 실패: ' + error.message)
+      alert(t('request.cancelFailed', { message: error.message }))
     } else {
-      alert('지원이 취소되었습니다.')
+      alert(t('request.cancelSuccess'))
       setMatchStatus(null)
     }
   }
@@ -199,13 +201,13 @@ export default function RequestDetail() {
       {/* 타이틀 & 요약 */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-text-primary">{request.title}</h1>
-        <div className="text-sm text-text-secondary">{request.destination_city} | 수고비: {request.reward.toLocaleString()} {request.currency}</div>
-        <div className="text-sm text-text-muted">수령 기간: {request.receive_start} ~ {request.receive_end}</div>
+        <div className="text-sm text-text-secondary">{request.destination_city} | {t('request.fee')}: {request.reward.toLocaleString()} {request.currency}</div>
+        <div className="text-sm text-text-muted">{t('request.receiveDate')}: {request.receive_start} ~ {request.receive_end}</div>
       </div>
 
       {/* 품목 카드 */}
       <div className="p-4 bg-background border rounded-layout shadow-card">
-        <h3 className="text-lg font-semibold mb-3 text-text-primary">요청 품목</h3>
+        <h3 className="text-lg font-semibold mb-3 text-text-primary">{t('request.items')}</h3>
         <ul className="list-disc ml-5 space-y-2 text-sm text-text-secondary">
           {request.items.map((item, i) => (
             <li key={i}>
@@ -220,7 +222,7 @@ export default function RequestDetail() {
       {/* 설명 */}
       {request.description && (
         <div className="p-4 bg-surface border rounded-layout shadow-card">
-          <h3 className="text-lg font-semibold mb-3 text-text-primary">요청 설명</h3>
+          <h3 className="text-lg font-semibold mb-3 text-text-primary">{t('request.description')}</h3>
           <p className="text-sm text-text-secondary whitespace-pre-wrap">{request.description}</p>
         </div>
       )}
@@ -230,13 +232,13 @@ export default function RequestDetail() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-8">
           {matchStatus === 'pending' ? (
             <>
-              <Button className="w-full sm:w-auto" disabled>캐리어 지원 완료</Button>
-              <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>지원 취소</Button>
+              <Button className="w-full sm:w-auto" disabled>{t('request.applicationComplete')}</Button>
+              <Button className="w-full sm:w-auto" variant="outline" onClick={handleCancel}>{t('request.cancelApplication')}</Button>
             </>
           ) : isRequestMatched ? (
             <div className="flex flex-col w-full sm:w-auto gap-2">
               <div className="text-sm text-red-600 bg-red-50 p-3 rounded-control border border-red-100 font-medium">
-                <p>이미 매칭이 완료된 요청입니다.</p>
+                <p>{t('request.alreadyMatched')}</p>
               </div>
             </div>
           ) : (
@@ -246,16 +248,16 @@ export default function RequestDetail() {
                 onClick={handleApply} 
                 disabled={!hasTrip}
               >
-                캐리어 지원하기
+                {t('request.applyAsCarrier')}
               </Button>
               {!hasTrip && (
                 <div className="text-xs text-brand bg-brand-light/20 p-2 rounded-control border border-brand/20">
-                  <p>여정을 먼저 등록해야 캐리어로 지원할 수 있어요.</p>
+                  <p>{t('request.registerTripFirst')}</p>
                   <button 
                     onClick={() => navigate('/trip/new')} 
                     className="text-brand hover:text-brand-dark font-medium underline mt-1"
                   >
-                    여정 등록하러 가기 →
+                    {t('request.goToRegisterTrip')} →
                   </button>
                 </div>
               )}
@@ -268,26 +270,25 @@ export default function RequestDetail() {
             onClick={() => window.open(request.chat_url, '_blank')}
             disabled={matchStatus !== 'pending' || !request.chat_url}
           >
-            오픈채팅
+            {t('request.openChat')}
           </Button>
         </div>
       ) : (
         <div className="mt-8 p-4 bg-background rounded-layout border text-text-secondary text-sm">
-          이 요청에 지원하려면{' '}
+          {t('request.loginToApply')}{' '}
           <span
             className="text-brand hover:text-brand-dark cursor-pointer transition-colors duration-200"
             onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
           >
-            로그인
-          </span>{' '}
-          해주세요.
+            {t('auth.login')}
+          </span>
         </div>
       )}
 
       {/* 작성자 알림 */}
       {isOwner && (
         <div className="mt-10 text-sm text-brand border-t pt-4">
-          이 요청은 내가 등록한 거예요. 매칭 확정 기능은 곧 추가됩니다.
+          {t('request.myRequest')} {t('request.matchingFeatureSoon')}
         </div>
       )}
     </div>

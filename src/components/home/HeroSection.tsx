@@ -3,10 +3,12 @@ import Button from '../../components/Button'
 import { useEffect, useState } from 'react'
 import { Typewriter } from 'react-simple-typewriter'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plane, Package, ArrowRight } from 'lucide-react'
+import { Plane, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 function HeroSection() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [showSecondLine, setShowSecondLine] = useState(false)
   const [slideComplete, setSlideComplete] = useState(false)
   const [showButtons, setShowButtons] = useState(false)
@@ -43,7 +45,7 @@ function HeroSection() {
         <p className="text-base sm:text-lg text-brand-dark">
           {showSecondLine && (
             <Typewriter
-              words={['여유 공간으로 이어지는 사람들']}
+              words={[t('home.hero.slogan')]}
               loop={1}
               cursor={false}
               typeSpeed={40}
@@ -63,13 +65,10 @@ function HeroSection() {
           >
             <div>
               <p className="text-brand-dark font-semibold text-base mb-2 flex items-center gap-2">
-                <Plane size={18} className="text-brand" /> 여행 준비 중이신가요?
+                <Plane size={18} className="text-brand" /> {t('home.hero.travelQuestion')}
               </p>
               <p className="text-base text-text-secondary flex flex-wrap items-center gap-1">
-                CarryOn에 여정을 등록하고{' '}
-                <span className="text-brand font-semibold flex items-center gap-1">
-                  <Package size={16} /> 캐리어
-                </span>로 활동해보세요.
+                {t('home.hero.registerTrip')}
               </p>
             </div>
 
@@ -79,7 +78,7 @@ function HeroSection() {
                 size="lg" 
                 className="w-full sm:w-auto whitespace-nowrap flex items-center justify-center gap-2"
               >
-                <Plane size={18} /> 여정 등록하기
+                <Plane size={18} /> {t('home.hero.registerTripButton')}
               </Button>
               <Button 
                 onClick={() => navigate('/requests')} 
@@ -87,7 +86,7 @@ function HeroSection() {
                 size="lg" 
                 className="w-full sm:w-auto whitespace-nowrap px-8 flex items-center justify-center gap-2"
               >
-                요청 찾아보기 <ArrowRight size={16} />
+                {t('home.hero.browseRequestsButton')} <ArrowRight size={16} />
               </Button>
             </div>
           </motion.div>

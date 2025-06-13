@@ -4,8 +4,10 @@ import { supabase } from '../supabase'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import Header from '../components/Layout/Header'
+import { useTranslation } from 'react-i18next'
 
 export default function ResetPasswordRequest() {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -18,10 +20,10 @@ export default function ResetPasswordRequest() {
         redirectTo: `${window.location.origin}/reset-password/update`,
       })
       if (error) setError(error.message)
-      else setMessage(`${email}로 재설정 링크를 보냈어요. 메일함을 확인해주세요.`)
+      else setMessage(t('auth.resetPasswordRequest.linkSent', { email }))
     } catch (err) {
       console.error('비밀번호 재설정 요청 오류:', err)
-      setError('비밀번호 재설정 요청 중 오류가 발생했습니다.')
+      setError(t('auth.resetPasswordRequest.requestError'))
     }
   }
 
@@ -30,12 +32,12 @@ export default function ResetPasswordRequest() {
       <Header />
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-surface p-8 rounded-layout mt-12 border shadow">
-          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">비밀번호 재설정</h2>
-          <Input label="이메일" value={email} setValue={setEmail} type="email" />
+          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">{t('auth.resetPasswordRequest.title')}</h2>
+          <Input label={t('auth.email')} value={email} setValue={setEmail} type="email" />
           {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
           {message && <p className="text-green-600 text-sm mt-4 text-center">{message}</p>}
           <Button onClick={handleSubmit} className="w-full mt-6">
-            이메일로 재설정 링크 받기
+            {t('auth.resetPasswordRequest.getResetLink')}
           </Button>
         </div>
       </div>

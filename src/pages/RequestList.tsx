@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { Calendar, MapPin, Coins, ArrowUpDown, SlidersHorizontal, Clock } from 'lucide-react'
 
@@ -38,6 +39,7 @@ type Request = {
 }
 
 export default function RequestList() {
+  const { t } = useTranslation()
   const { loading: authLoading } = useAuth()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
@@ -117,7 +119,7 @@ export default function RequestList() {
       const { data, error } = await query
 
       if (error) {
-        console.error('❌ 요청 불러오기 실패:', error.message)
+        console.error(`❌ ${t('request.loadFailed')}:`, error.message)
       } else {
         // 데이터 정규화 및 추가 속성 계산
         const result = (data as RawRequest[]).map((item): Request => {
@@ -179,26 +181,28 @@ export default function RequestList() {
   const StatusBadge = ({ hasApplicants, hasAcceptedCarrier }: { hasApplicants?: boolean, hasAcceptedCarrier?: boolean }) => {
     if (hasAcceptedCarrier) {
       return (
-        <div className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-green-500"></span>
-          매칭 완료
-        </div>
-      )
-    } else if (hasApplicants) {
-      return (
-        <div className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-          지원자 있음
-        </div>
-      )
-    } else {
-      return (
-        <div className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-          대기중
-        </div>
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-600 mr-1"></span>
+          {t('request.matchComplete')}
+        </span>
       )
     }
+    
+    if (hasApplicants) {
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1"></span>
+          {t('request.hasApplicants')}
+        </span>
+      )
+    }
+    
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mr-1"></span>
+        {t('request.waiting')}
+      </span>
+    )
   }
 
   // 날짜 포맷팅 함수
@@ -253,28 +257,28 @@ export default function RequestList() {
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'recent' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
             >
               <Clock size={14} className="inline mr-1" />
-              최신순
+              {t('request.sortLatest')}
             </button>
             <button 
               onClick={() => setSortOption('reward')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'reward' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
             >
               <Coins size={14} className="inline mr-1" />
-              수고비
+              {t('request.fee')}
             </button>
             <button 
               onClick={() => setSortOption('endDate')}
               className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${sortOption === 'endDate' ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}`}
             >
               <Calendar size={14} className="inline mr-1" />
-              마감일
+              {t('request.deadline')}
             </button>
             <button 
               onClick={toggleSortDirection}
               className="px-3 py-1.5 rounded text-xs font-medium ml-1 hover:bg-gray-100 transition-colors"
             >
               <ArrowUpDown size={14} className="inline" />
-              {sortDirection === 'desc' ? '내림' : '오름'}
+              {sortDirection === 'desc' ? t('request.descending') : t('request.ascending')}
             </button>
           </div>
         </div>
@@ -286,8 +290,8 @@ export default function RequestList() {
         </div>
       ) : requests.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-8 text-center">
-          <p className="text-gray-500">표시할 요청이 없습니다.</p>
-          <p className="text-sm text-gray-400 mt-2">필터 설정을 변경하거나 나중에 다시 확인해주세요.</p>
+          <p className="text-gray-500">{t('request.noRequests')}</p>
+          <p className="text-sm text-gray-400 mt-2">{t('request.changeFilters')}</p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -323,15 +327,15 @@ export default function RequestList() {
                 
                 <div className="mt-2 flex items-center text-xs text-gray-500">
                   <Calendar size={14} className="inline mr-1 text-gray-400" />
-                  <span>수령일: {formatDate(req.receive_start)} ~ {formatDate(req.receive_end)}</span>
+                  <span>{t('request.receiveDate')}: {formatDate(req.receive_start)} ~ {formatDate(req.receive_end)}</span>
                 </div>
                 
                 <div className="mt-2 flex justify-between items-center">
                   <p className="text-xs text-gray-500">
-                    요청자: {req.profiles?.nickname ?? '알 수 없음'}
+                    {t('request.requester')}: {req.profiles?.nickname ?? t('common.unknown')}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {dayjs(req.created_at).format('YYYY.MM.DD')} 등록
+                    {dayjs(req.created_at).format('YYYY.MM.DD')} {t('request.registered')}
                   </p>
                 </div>
               </li>

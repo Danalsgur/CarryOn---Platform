@@ -1,35 +1,37 @@
 import { Plane, Search, MessageCircle, Package, Wallet } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 function HowItWorks() {
+  const { t } = useTranslation()
   const steps = [
     {
       step: 'STEP 1',
-      title: '여정을 등록해요',
-      description: '언제, 어디로 가는지 여행 일정을 입력하고, 남는 짐 공간을 공유할 준비를 합니다.',
+      title: t('home.howItWorks.step1'),
+      description: t('home.howItWorks.step1Desc'),
       icon: <Plane size={24} />
     },
     {
       step: 'STEP 2',
-      title: '요청을 살펴보고 골라요',
-      description: '내 여정과 맞는 배송 요청을 확인하고, 맡고 싶은 요청을 직접 선택합니다.',
+      title: t('home.howItWorks.step2'),
+      description: t('home.howItWorks.step2Desc'),
       icon: <Search size={24} />
     },
     {
       step: 'STEP 3',
-      title: '바이어와 소통해요',
-      description: '오픈채팅을 통해 바이어와 물건 내용, 전달 방식 등을 협의합니다.',
+      title: t('home.howItWorks.step3'),
+      description: t('home.howItWorks.step3Desc'),
       icon: <MessageCircle size={24} />
     },
     {
       step: 'STEP 4',
-      title: '물건을 준비해요',
-      description: '직접 구매하거나, 바이어가 보내준 물건을 받아 전달 준비를 마칩니다.',
+      title: t('home.howItWorks.step4'),
+      description: t('home.howItWorks.step4Desc'),
       icon: <Package size={24} />
     },
     {
       step: 'STEP 5',
-      title: '전달하고 수고비를 받아요',
-      description: '공항이나 현지에서 바이어에게 물건을 전달하고, 정해진 수고비를 받아요.',
+      title: t('home.howItWorks.step5'),
+      description: t('home.howItWorks.step5Desc'),
       icon: <Wallet size={24} />
     },
   ]
@@ -37,7 +39,7 @@ function HowItWorks() {
   return (
     <section className="py-16 bg-surface">
       <h2 className="text-2xl font-bold text-center text-text-primary mb-8">
-        CarryOn은 이렇게 작동해요
+        {t('home.howItWorks.title')}
       </h2>
 
       <div className="max-w-5xl mx-auto grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -61,11 +63,10 @@ function HowItWorks() {
       {/* 사용자 역할 설명 섹션 */}
       <div className="mt-20">
         <h3 className="text-2xl font-bold text-center text-text-primary mb-6">
-          누가 어떤 역할을 하나요?
+          {t('home.howItWorks.rolesTitle')}
         </h3>
         <p className="text-center text-text-secondary text-base max-w-xl mx-auto mb-6">
-          CarryOn에서는 <span className="font-medium text-brand">바이어</span>와
-          <span className="font-medium text-brand"> 캐리어</span>가 각자의 방식으로 협력합니다.
+          {t('home.howItWorks.rolesDesc')}
         </p>
 
         <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-8 text-center">
@@ -75,25 +76,25 @@ function HowItWorks() {
                 <Package size={28} />
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-brand">바이어 (Buyer)</h4>
+            <h4 className="text-lg font-semibold text-brand">{t('home.howItWorks.buyerTitle')}</h4>
             <ul className="text-text-secondary text-sm space-y-3">
              <li className="flex items-start gap-2">
                <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                  <Package size={16} />
                </div>
-               <span>받고 싶은 물건을 요청하고, 수고비를 제시해요</span>
+               <span>{t('home.howItWorks.buyerRole1')}</span>
              </li>
              <li className="flex items-start gap-2">
                <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                  <MessageCircle size={16} />
                </div>
-               <span>캐리어와 오픈채팅으로 소통하고 매칭을 확정해요</span>
+               <span>{t('home.howItWorks.buyerRole2')}</span>
              </li>
              <li className="flex items-start gap-2">
                <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                  <Wallet size={16} />
                </div>
-               <span>공항이나 현지에서 물건을 전달받아요</span>
+               <span>{t('home.howItWorks.buyerRole3')}</span>
              </li>
             </ul>
           </div>
@@ -103,25 +104,25 @@ function HowItWorks() {
                 <Plane size={28} />
               </div>
             </div>
-            <h4 className="text-lg font-semibold text-brand">캐리어 (Carrier)</h4>
+            <h4 className="text-lg font-semibold text-brand">{t('home.howItWorks.carrierTitle')}</h4>
             <ul className="text-text-secondary text-sm space-y-3">
               <li className="flex items-start gap-2">
                 <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                   <Plane size={16} />
                 </div>
-                <span>본인의 여행 일정을 등록해요</span>
+                <span>{t('home.howItWorks.carrierRole1')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                   <Search size={16} />
                 </div>
-                <span>요청 목록에서 원하는 요청을 골라 매칭해요</span>
+                <span>{t('home.howItWorks.carrierRole2')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="min-w-[20px] flex justify-center mt-0.5 text-brand">
                   <Wallet size={16} />
                 </div>
-                <span>바이어와 소통하고, 전달 후 수고비를 받아요</span>
+                <span>{t('home.howItWorks.carrierRole3')}</span>
               </li>
             </ul>
           </div>

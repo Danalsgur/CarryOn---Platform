@@ -6,6 +6,7 @@ import Input from '../components/Input'
 import Button from '../components/Button'
 import { validateTextInput, ValidationResult } from '../utils/contentFilter'
 import { CountryCode, countryCodes, DEFAULT_COUNTRY_CODE, getCountryByCode } from '../utils/countryCodeData'
+import { useTranslation } from 'react-i18next'
 
 // 국가 코드 선택 드롭다운 컴포넌트
 function CountryCodeDropdown({
@@ -80,6 +81,7 @@ function CountryCodeDropdown({
 export default function ProfileSetup() {
   const navigate = useNavigate()
   const { user, setProfile, loading } = useAuth()
+  const { t } = useTranslation()
 
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
@@ -95,8 +97,8 @@ export default function ProfileSetup() {
   const [phoneValidation, setPhoneValidation] = useState<ValidationResult>({ isValid: true })
   
   // 입력 필드 최대 길이 제한
-  const MAX_NAME_LENGTH = 20
-  const MAX_NICKNAME_LENGTH = 15
+  const MAX_NAME_LENGTH = 12
+  const MAX_NICKNAME_LENGTH = 10
   const MAX_PHONE_LENGTH = 15
 
 
@@ -151,23 +153,23 @@ export default function ProfileSetup() {
     setError(null)
 
     if (!name || !nickname || !phone) {
-      setError('모든 정보를 입력해주세요.')
+      setError(t('profile.setup.enterAllInfo'))
       return
     }
     
     // 모든 입력 필드의 유효성 검사
     if (!nameValidation.isValid) {
-      setError(nameValidation.errorMessage || '이름이 유효하지 않습니다.')
+      setError(nameValidation.errorMessage || t('profile.setup.invalidName'))
       return
     }
     
     if (!nicknameValidation.isValid) {
-      setError(nicknameValidation.errorMessage || '닉네임이 유효하지 않습니다.')
+      setError(nicknameValidation.errorMessage || t('profile.setup.invalidNickname'))
       return
     }
     
     if (!phoneValidation.isValid) {
-      setError(phoneValidation.errorMessage || '전화번호가 유효하지 않습니다.')
+      setError(phoneValidation.errorMessage || t('profile.setup.invalidPhone'))
       return
     }
 
@@ -183,9 +185,9 @@ export default function ProfileSetup() {
 
     if (error) {
       if (error.code === '23505' || error.message.includes('duplicate')) {
-        setError('이미 사용 중인 닉네임입니다.')
+        setError(t('profile.setup.duplicateNickname'))
       } else {
-        setError(`프로필 저장 실패: ${error.message}`)
+        setError(t('profile.setup.saveFailed', { message: error.message }))
       }
     } else {
       const updatedProfile = {
@@ -208,15 +210,15 @@ export default function ProfileSetup() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
         <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">
-          추가 정보 입력
+          {t('profile.setup.title')}
         </h2>
 
         <div className="space-y-4">
           <Input 
-            label="이름" 
+            label={t('profile.name')} 
             value={name} 
             setValue={setName} 
-            placeholder="실명을 입력해주세요"
+            placeholder={t('profile.enterRealName')}
             rightElement={
               name ? <span className="text-xs text-text-secondary">{name.length}/{MAX_NAME_LENGTH}</span> : undefined
             }
@@ -226,10 +228,10 @@ export default function ProfileSetup() {
           )}
           
           <Input 
-            label="닉네임" 
+            label={t('profile.nickname')} 
             value={nickname} 
             setValue={setNickname} 
-            placeholder="서비스에서 사용할 닉네임"
+            placeholder={t('profile.enterNickname')}
             rightElement={
               nickname ? <span className="text-xs text-text-secondary">{nickname.length}/{MAX_NICKNAME_LENGTH}</span> : undefined
             }
@@ -239,7 +241,7 @@ export default function ProfileSetup() {
           )}
           
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-text-primary">전화번호</label>
+            <label className="block mb-2 text-sm font-medium text-text-primary">{t('profile.phone')}</label>
             <div className="flex items-center space-x-2">
               <div className="w-1/3">
                 <CountryCodeDropdown
@@ -253,7 +255,7 @@ export default function ProfileSetup() {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="'-' 없이 숫자만 입력"
+                    placeholder={t('profile.setup.phoneHint')}
                     className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
                   />
                   {phone && (
@@ -274,7 +276,7 @@ export default function ProfileSetup() {
         {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
 
         <Button onClick={handleSubmit} className="mt-6 w-full">
-          저장하고 시작하기
+          {t('profile.setup.saveAndStart')}
         </Button>
       </div>
     </div>

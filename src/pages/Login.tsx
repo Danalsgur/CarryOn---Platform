@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import GoogleIcon from '../components/GoogleIcon'
 import Header from '../components/Layout/Header'
+import { useTranslation } from 'react-i18next'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +41,7 @@ export default function Login() {
     })
 
     if (error) {
-      setError(`Google 로그인 실패: ${error.message}`)
+      setError(`${t('auth.googleLoginError')}${error.message}`)
     }
   }
 
@@ -48,11 +50,11 @@ export default function Login() {
       <Header />
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200 mt-12">
-          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">로그인</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">{t('auth.login')}</h2>
 
           <div className="space-y-4">
-            <Input label="이메일" value={email} setValue={setEmail} type="email" />
-            <Input label="비밀번호" value={password} setValue={setPassword} type="password" />
+            <Input label={t('auth.email')} value={email} setValue={setEmail} type="email" />
+            <Input label={t('auth.password')} value={password} setValue={setPassword} type="password" />
           </div>
 
           {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
@@ -61,10 +63,10 @@ export default function Login() {
             onClick={handleLogin}
             className="w-full mt-6 bg-brand hover:bg-brand-dark text-white font-semibold py-2 rounded-control transition-all duration-200"
           >
-            이메일로 로그인
+            {t('auth.loginWithEmail')}
           </button>
 
-          <div className="my-4 text-center text-sm text-text-secondary">또는</div>
+          <div className="my-4 text-center text-sm text-text-secondary">{t('auth.or')}</div>
 
           <div className="flex justify-center">
             <button
@@ -77,22 +79,22 @@ export default function Login() {
           </div>
 
           <div className="mt-6 text-sm text-center text-text-secondary">
-            계정이 없으신가요?{' '}
+            {t('auth.noAccount')}{' '}
             <span
               onClick={() => navigate('/signup')}
               className="text-brand hover:underline cursor-pointer font-medium"
             >
-              회원가입
+              {t('auth.signupLink')}
             </span>
           </div>
 
           <div className="mt-2 text-sm text-center text-text-secondary">
-            비밀번호를 잊으셨나요?{' '}
+            {t('auth.forgotPassword')}{' '}
             <span
               onClick={() => navigate('/reset-password')}
               className="text-brand hover:underline cursor-pointer font-medium"
             >
-              재설정하기
+              {t('auth.resetPassword')}
             </span>
           </div>
         </div>

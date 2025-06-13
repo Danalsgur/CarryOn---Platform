@@ -7,7 +7,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import AuthCallback from './pages/AuthCallback'
 import ProfileSetup from './pages/ProfileSetup'
-import ProfileEdit from './pages/ProfileEdit'
+// ProfileEdit 컴포넌트 제거
 import Mypage from './pages/Mypage'
 import RequestNew from './pages/RequestNew'
 import RequestDetail from './pages/RequestDetail'
@@ -51,7 +51,6 @@ function App() {
           />
           <Route path="/trip/new" element={<TripNew />} />
           <Route path="/trip/edit/:id" element={<TripEdit />} />
-          <Route path="/profile/edit" element={<ProfileEdit />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

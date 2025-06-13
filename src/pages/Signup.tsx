@@ -5,11 +5,13 @@ import Input from '../components/Input'
 import Button from '../components/Button'
 import Header from '../components/Layout/Header'
 import { PasswordInput } from '../components/Password'
+import { useTranslation } from 'react-i18next'
 
 
 
 export default function Signup() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -24,12 +26,12 @@ export default function Signup() {
     setMessage(null)
 
     if (!email || !password) {
-      setError('이메일과 비밀번호를 입력해주세요.')
+      setError(t('auth.signup.enterEmailPassword'))
       return
     }
 
     if (password !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.')
+      setError(t('auth.signup.passwordMismatch'))
       return
     }
 
@@ -48,7 +50,7 @@ export default function Signup() {
     if (error) {
       setError(error.message)
     } else {
-      setMessage(`인증 이메일이 ${email} 주소로 전송되었습니다.\n메일을 확인하고 로그인해주세요.`)
+      setMessage(t('auth.signup.verificationSent', { email }))
     }
   }
 
@@ -58,19 +60,19 @@ export default function Signup() {
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200 mt-12">
           <h2 className="text-2xl font-bold text-center mb-6 text-text-primary">
-            회원가입
+            {t('auth.signup.title')}
           </h2>
 
           <div className="space-y-4">
             <Input
-              label="이메일"
+              label={t('auth.email')}
               type="email"
               value={email}
               setValue={setEmail}
               placeholder="you@example.com"
             />
             <PasswordInput
-              label="비밀번호"
+              label={t('auth.password')}
               value={password}
               setValue={setPassword}
               placeholder="••••••••"
@@ -78,7 +80,7 @@ export default function Signup() {
               showStrengthMeter={true}
             />
             <PasswordInput
-              label="비밀번호 확인"
+              label={t('auth.signup.confirmPassword')}
               value={confirmPassword}
               setValue={setConfirmPassword}
               placeholder="••••••••"
@@ -95,16 +97,16 @@ export default function Signup() {
           )}
 
           <Button onClick={handleSignup} disabled={loading} className="mt-6 w-full">
-            {loading ? '가입 중...' : '가입하기'}
+            {loading ? t('auth.signup.signingUp') : t('auth.signup.signupButton')}
           </Button>
 
           <p className="text-sm text-center mt-4 text-text-secondary">
-            이미 계정이 있나요?{' '}
+            {t('auth.signup.haveAccount')}{' '}
             <span
               onClick={() => navigate('/login')}
               className="text-brand cursor-pointer hover:underline"
             >
-              로그인
+              {t('auth.signup.loginLink')}
             </span>
           </p>
         </div>

@@ -5,9 +5,11 @@ import Button from '../components/Button'
 import Header from '../components/Layout/Header'
 import { useNavigate } from 'react-router-dom'
 import { PasswordInput } from '../components/Password'
+import { useTranslation } from 'react-i18next'
 
 export default function ResetPasswordUpdate() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
@@ -19,7 +21,7 @@ export default function ResetPasswordUpdate() {
     const checkSession = async () => {
       const { data, error } = await supabase.auth.getSession()
       if (error || !data.session) {
-        setError('유효하지 않은 비밀번호 재설정 링크입니다. 다시 시도해주세요.')
+        setError(t('auth.resetPasswordUpdate.invalidLink'))
       }
     }
     
@@ -33,7 +35,7 @@ export default function ResetPasswordUpdate() {
     
     // 비밀번호 일치 여부 확인
     if (newPassword !== confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.')
+      setError(t('auth.resetPasswordUpdate.passwordMismatch'))
       setLoading(false)
       return
     }
@@ -44,12 +46,12 @@ export default function ResetPasswordUpdate() {
       if (error) {
         setError(error.message)
       } else {
-        setMessage('비밀번호가 성공적으로 변경되었습니다. 이제 로그인해주세요.')
+        setMessage(t('auth.resetPasswordUpdate.updateSuccess'))
         setTimeout(() => navigate('/login'), 2000)
       }
     } catch (err) {
       console.error('비밀번호 업데이트 오류:', err)
-      setError('비밀번호 변경 중 오류가 발생했습니다.')
+      setError(t('auth.resetPasswordUpdate.updateError'))
     } finally {
       setLoading(false)
     }
@@ -60,11 +62,11 @@ export default function ResetPasswordUpdate() {
       <Header />
       <div className="flex items-center justify-center px-4">
         <div className="w-full max-w-md bg-surface p-8 rounded-layout mt-12 border shadow">
-          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">새 비밀번호 설정</h2>
+          <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">{t('auth.resetPasswordUpdate.title')}</h2>
           
           <div className="space-y-4">
             <PasswordInput
-              label="새 비밀번호"
+              label={t('auth.resetPasswordUpdate.newPassword')}
               value={newPassword}
               setValue={setNewPassword}
               showRequirements={true}
@@ -72,7 +74,7 @@ export default function ResetPasswordUpdate() {
             />
             
             <PasswordInput
-              label="비밀번호 확인"
+              label={t('auth.resetPasswordUpdate.confirmPassword')}
               value={confirmPassword}
               setValue={setConfirmPassword}
               showRequirements={false}
@@ -80,7 +82,7 @@ export default function ResetPasswordUpdate() {
             />
             
             {confirmPassword && newPassword !== confirmPassword && (
-              <p className="text-danger text-xs">비밀번호가 일치하지 않습니다.</p>
+              <p className="text-danger text-xs">{t('auth.resetPasswordUpdate.passwordMismatch')}</p>
             )}
           </div>
           
@@ -92,7 +94,7 @@ export default function ResetPasswordUpdate() {
             className="w-full mt-6" 
             disabled={loading || !newPassword || !confirmPassword || newPassword !== confirmPassword}
           >
-            {loading ? '처리 중...' : '비밀번호 변경'}
+            {loading ? t('auth.resetPasswordUpdate.processing') : t('auth.resetPasswordUpdate.changePassword')}
           </Button>
         </div>
       </div>

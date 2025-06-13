@@ -4,10 +4,12 @@ import { supabase } from '../supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/Button'
 import { validateTextInput, ValidationResult } from '../utils/contentFilter'
+import { useTranslation } from 'react-i18next'
 
 export default function ProfileEdit() {
   const navigate = useNavigate()
   const { user, profile, setProfile, loading } = useAuth()
+  const { t } = useTranslation()
 
   const [name, setName] = useState('')
   const [nickname, setNickname] = useState('')
@@ -65,7 +67,7 @@ export default function ProfileEdit() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-text-secondary">
-        로딩 중입니다...
+        {t('profile.loading')}
       </div>
     )
   }
@@ -73,7 +75,7 @@ export default function ProfileEdit() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center text-text-secondary">
-        로그인 정보가 없습니다.
+        {t('profile.edit.noLoginInfo')}
       </div>
     )
   }
@@ -82,22 +84,22 @@ export default function ProfileEdit() {
     setError(null)
 
     if (!name || !nickname || !phone) {
-      setError('모든 정보를 입력해주세요.')
+      setError(t('profile.edit.enterAllInfo'))
       return
     }
     
     if (!nameValidation.isValid) {
-      setError(nameValidation.errorMessage || '이름이 유효하지 않습니다.')
+      setError(nameValidation.errorMessage || t('profile.edit.invalidName'))
       return
     }
     
     if (!nicknameValidation.isValid) {
-      setError(nicknameValidation.errorMessage || '닉네임이 유효하지 않습니다.')
+      setError(nicknameValidation.errorMessage || t('profile.edit.invalidNickname'))
       return
     }
     
     if (!phoneValidation.isValid) {
-      setError(phoneValidation.errorMessage || '전화번호가 유효하지 않습니다.')
+      setError(phoneValidation.errorMessage || t('profile.edit.invalidPhone'))
       return
     }
 
@@ -112,9 +114,9 @@ export default function ProfileEdit() {
 
     if (error) {
       if (error.code === '23505' || error.message.includes('duplicate')) {
-        setError('이미 사용 중인 닉네임입니다.')
+        setError(t('profile.edit.duplicateNickname'))
       } else {
-        setError(`프로필 저장 실패: ${error.message}`)
+        setError(t('profile.edit.saveFailed', { message: error.message }))
       }
     } else {
         setProfile({
@@ -132,11 +134,11 @@ export default function ProfileEdit() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md bg-surface p-8 rounded-layout shadow-card border border-gray-200">
-        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">프로필 수정</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-text-primary">{t('profile.edit.title')}</h2>
 
         <div className="space-y-4">
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-text-primary">이름</label>
+            <label className="block mb-2 text-sm font-medium text-text-primary">{t('profile.name')}</label>
             <div className="relative">
               <input
                 type="text"
@@ -152,7 +154,7 @@ export default function ProfileEdit() {
                     setNameValidation({ isValid: true });
                   }
                 }}
-                placeholder="실명을 입력해주세요"
+                placeholder={t('profile.enterRealName')}
                 maxLength={MAX_NAME_LENGTH}
                 className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${nameValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
               />
@@ -166,7 +168,7 @@ export default function ProfileEdit() {
           </div>
           
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-text-primary">닉네임</label>
+            <label className="block mb-2 text-sm font-medium text-text-primary">{t('profile.nickname')}</label>
             <div className="relative">
               <input
                 type="text"
@@ -182,7 +184,7 @@ export default function ProfileEdit() {
                     setNicknameValidation({ isValid: true });
                   }
                 }}
-                placeholder="서비스에서 사용할 닉네임"
+                placeholder={t('profile.enterNickname')}
                 maxLength={MAX_NICKNAME_LENGTH}
                 className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${nicknameValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
               />
@@ -196,7 +198,7 @@ export default function ProfileEdit() {
           </div>
           
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-text-primary">전화번호</label>
+            <label className="block mb-2 text-sm font-medium text-text-primary">{t('profile.phone')}</label>
             <div className="relative">
               <input
                 type="text"
@@ -212,7 +214,7 @@ export default function ProfileEdit() {
                     setPhoneValidation({ isValid: true });
                   }
                 }}
-                placeholder="'-' 없이 숫자만 입력"
+                placeholder={t('profile.edit.phoneHint')}
                 maxLength={MAX_PHONE_LENGTH}
                 className={`w-full px-4 py-2 border rounded-control shadow-control focus:outline-none focus:ring-2 transition-all duration-200 ${phoneValidation.isValid ? 'border-gray-300 focus:ring-brand focus:border-transparent' : 'border-red-300 focus:ring-red-200 focus:border-red-300'}`}
               />
@@ -229,7 +231,7 @@ export default function ProfileEdit() {
         {error && <p className="text-danger text-sm mt-4 text-center">{error}</p>}
 
         <Button onClick={handleSubmit} className="mt-6 w-full">
-          저장
+          {t('profile.edit.save')}
         </Button>
       </div>
     </div>
