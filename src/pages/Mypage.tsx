@@ -6,6 +6,7 @@ import Button from '../components/Button'
 import dayjs from 'dayjs'
 import { Pencil, ShoppingBag, Briefcase, Package, PlusCircle, Plane } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 type MatchItem = {
   id: string
@@ -61,6 +62,7 @@ export default function Mypage() {
   const [tab, setTab] = useState<'buyer' | 'carrier'>(initialTab)
   const [requests, setRequests] = useState<Request[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
+  const { t } = useTranslation()
 
   const fetchData = async (tab: 'buyer' | 'carrier', userId: string) => {
     if (tab === 'buyer') {
@@ -196,7 +198,7 @@ export default function Mypage() {
             onClick={() => setTab('buyer')}
           >
             <ShoppingBag size={18} />
-            <span>바이어용</span>
+            <span>{t('mypage.tabs.buyer')}</span>
             {tab === 'buyer' && (
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
             )}
@@ -208,7 +210,7 @@ export default function Mypage() {
             onClick={() => setTab('carrier')}
           >
             <Briefcase size={18} />
-            <span>캐리어용</span>
+            <span>{t('mypage.tabs.carrier')}</span>
             {tab === 'carrier' && (
               <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t-full"></span>
             )}
@@ -218,22 +220,22 @@ export default function Mypage() {
 
       {tab === 'buyer' && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-blue-700">내가 올린 요청</h2>
+          <h2 className="text-lg font-semibold text-blue-700">{t('mypage.buyer.myRequests')}</h2>
           {requests.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 sm:py-10 px-3 sm:px-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
               <div className="bg-blue-100 p-3 sm:p-4 rounded-full mb-3 sm:mb-4">
                 <Package size={28} className="text-blue-600" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">아직 등록한 요청이 없습니다</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">{t('mypage.buyer.noRequests')}</h3>
               <p className="text-xs sm:text-sm text-gray-500 text-center mb-4 sm:mb-6 max-w-md">
-                해외에서 구매하고 싶은 물건이 있으신가요? 새로운 요청을 등록하고 캐리어를 찾아보세요.
+                {t('mypage.buyer.noRequestsDesc')}
               </p>
               <Button
                 onClick={() => navigate('/request/new')}
                 className="flex items-center gap-1.5 sm:gap-2 text-sm px-3 py-1.5 sm:px-4 sm:py-2"
               >
                 <PlusCircle size={16} />
-                새 요청 등록하기
+                {t('mypage.buyer.createNewRequest')}
               </Button>
             </div>
           )}
@@ -263,17 +265,17 @@ export default function Mypage() {
                   <div className="font-bold">{r.title}</div>
                   {hasAcceptedCarrier && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                      캐리어 선택 완료
+                      {t('mypage.buyer.carrierSelected')}
                     </span>
                   )}
                   {!hasAcceptedCarrier && hasApplicants && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                      지원자 있음
+                      {t('mypage.buyer.hasApplicants')}
                     </span>
                   )}
                   {!hasApplicants && (
                     <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-                      대기중
+                      {t('mypage.buyer.waiting')}
                     </span>
                   )}
                 </div>
@@ -284,17 +286,17 @@ export default function Mypage() {
                   {hasAcceptedCarrier ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                      캐리어 선택 완료
+                      {t('mypage.buyer.carrierSelected')}
                     </>
                   ) : hasApplicants ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                      지원자 검토 필요
+                      {t('mypage.buyer.reviewNeeded')}
                     </>
                   ) : (
                     <>
                       <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-                      지원자 대기중
+                      {t('mypage.buyer.waitingForApplicants')}
                     </>
                   )}
                 </div>
@@ -310,17 +312,17 @@ export default function Mypage() {
                       return (
                         <>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium text-green-700">선택된 캐리어:</span> 
+                            <span className="font-medium text-green-700">{t('mypage.buyer.selectedCarrier')}:</span> 
                             <a 
                               href={`/profile/${acceptedCarrier.user_id}`} 
                               className="text-blue-600 hover:underline font-medium"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              {acceptedCarrier.profiles?.nickname ?? '알 수 없음'}
+                              {acceptedCarrier.profiles?.nickname ?? t('mypage.buyer.noName')}
                             </a>
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            매칭 시간: {dayjs(acceptedCarrier.created_at).format('YYYY-MM-DD HH:mm')}
+                            {t('mypage.buyer.matchingTime')}: {dayjs(acceptedCarrier.created_at).format('YYYY-MM-DD HH:mm')}
                           </div>
                         </>
                       );
@@ -335,22 +337,22 @@ export default function Mypage() {
 
       {tab === 'carrier' && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-blue-700">내 여정 목록</h2>
+          <h2 className="text-lg font-semibold text-blue-700">{t('mypage.carrier.myTrips')}</h2>
           {trips.length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 sm:py-10 px-3 sm:px-4 border border-dashed border-gray-300 rounded-lg bg-gray-50">
               <div className="bg-blue-100 p-3 sm:p-4 rounded-full mb-3 sm:mb-4">
                 <Plane size={28} className="text-blue-600" />
               </div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">등록한 여정이 없습니다</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-800 mb-1 sm:mb-2">{t('mypage.carrier.noTrips')}</h3>
               <p className="text-xs sm:text-sm text-gray-500 text-center mb-4 sm:mb-6 max-w-md">
-                해외 여행 계획이 있으신가요? 여정을 등록하고 수고비를 벌어보세요.
+                {t('mypage.carrier.noTripsDesc')}
               </p>
               <Button
                 onClick={() => navigate('/trip/new')}
                 className="flex items-center gap-1.5 sm:gap-2 text-sm px-3 py-1.5 sm:px-4 sm:py-2"
               >
                 <PlusCircle size={16} />
-                새 여정 등록하기
+                {t('mypage.carrier.createNewTrip')}
               </Button>
             </div>
           )}
@@ -375,29 +377,31 @@ export default function Mypage() {
                 onClick={() => navigate(`/trip/edit/${trip.id}`)}
               >
                 <div className="flex justify-between items-start">
-                  <div className="font-bold text-lg text-blue-800 cursor-pointer hover:text-blue-600 transition-colors duration-150 ease-in-out py-1">{trip.to_city}행 여정</div>
+                  <div className="font-bold text-lg text-blue-800 cursor-pointer hover:text-blue-600 transition-colors duration-150 ease-in-out py-1">{t('mypage.carrier.tripToCity', { city: trip.to_city })}</div>
                   {/* 상태 배지 */}
                   <div className="inline-flex items-center">
                     {hasAcceptedMatch ? (
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                        매칭됨
+                        {t('mypage.carrier.matched')}
                       </span>
                     ) : hasPendingMatch ? (
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                        신청중 {trip.matches.filter(m => m.status === 'pending').length}개
+                        {t('mypage.carrier.pendingCount', { count: trip.matches.filter(m => m.status === 'pending').length })}
                       </span>
                     ) : (
                       <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-gray-400"></span>
-                        대기중
+                        {t('mypage.carrier.waiting')}
                       </span>
                     )}
                   </div>
                 </div>
                 
-                <div className="text-sm text-gray-600 mt-2 mb-3 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors duration-150 ease-in-out -mx-2">출발: {dayjs(trip.departure_date).format('YYYY-MM-DD')}</div>
+                <div className="text-sm text-gray-600 mt-2 mb-3 pb-2 border-b border-gray-200 cursor-pointer hover:bg-gray-50 px-2 py-1 rounded transition-colors duration-150 ease-in-out -mx-2">
+                  <span className="font-medium">{t('mypage.carrier.departure')}:</span> {dayjs(trip.departure_date).format('YYYY-MM-DD')}
+                </div>
                 
                 {/* 매칭된 요청 정보 표시 */}
                 {hasAcceptedMatch && (() => {
@@ -412,14 +416,14 @@ export default function Mypage() {
                   return (
                     <div className="mt-2 text-sm space-y-2 bg-green-50 p-3 rounded-lg border border-green-200">
                       {/* 총 수고비 표시 */}
-                      <div className="flex justify-between items-center font-medium text-green-800 border-b border-green-200 pb-2 mb-2">
-                        <span>총 수고비</span>
-                        <span className="text-lg">{totalReward.toLocaleString()}원</span>
+                      <div className="mt-3 text-sm font-medium text-gray-700 flex items-center justify-between">
+                        <span>{t('mypage.carrier.totalReward')}</span>
+                        <span className="text-lg font-bold text-green-700">{totalReward.toLocaleString()}{trip.matches[0]?.request?.currency === 'KRW' ? '원' : '$'}</span>
                       </div>
                       
                       {/* 매칭된 요청 목록 */}
                       <div className="space-y-1.5">
-                        <div className="text-sm font-medium mb-1">매칭된 요청:</div>
+                        <div className="text-sm font-medium text-green-800 mb-1">{t('mypage.carrier.matchedRequests')}:</div>
                         {acceptedMatches.map((match, index) => (
                           <div key={match.id} className="flex items-center justify-between mb-2">
                             <Link 
@@ -431,7 +435,7 @@ export default function Mypage() {
                               <span className="truncate">{match.request?.title}</span>
                             </Link>
                             <span className="text-sm font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
-                              {match.request?.reward.toLocaleString()}원
+                              {match.request?.reward.toLocaleString()}{match.request?.currency === 'KRW' ? '원' : '$'}
                             </span>
                           </div>
                         ))}
@@ -443,12 +447,11 @@ export default function Mypage() {
                 {/* 신청 중인 요청 정보 표시 */}
                 {hasPendingMatch && (() => {
                   const pendingMatches = trip.matches.filter(m => m.status === 'pending' && m.request);
-                  console.log('Pending matches:', pendingMatches);
                   if (pendingMatches.length === 0) return null;
                   
                   return (
                     <div className="mt-2 text-sm space-y-2 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-800 mb-1">신청 중인 요청 ({pendingMatches.length}개):</div>
+                      <div className="text-sm font-medium text-blue-800 mb-1">{t('mypage.carrier.pendingRequests', { count: pendingMatches.length })}:</div>
                       <div className="space-y-1.5">
                         {pendingMatches.map((match) => (
                           <div key={match.id} className="flex flex-col bg-blue-50 p-3 rounded mb-2">
@@ -458,17 +461,17 @@ export default function Mypage() {
                                 className="text-blue-700 hover:bg-blue-200 font-medium truncate max-w-[70%] px-3 py-2 rounded-md flex items-center transition-colors duration-150 ease-in-out flex-grow mr-2"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <span className="bg-blue-200 text-blue-800 rounded-md px-2 py-1 mr-2 text-xs font-medium">신청중</span>
+                                <span className="bg-blue-200 text-blue-800 rounded-md px-2 py-1 mr-2 text-xs font-medium">{t('mypage.carrier.pending')}</span>
                                 <span className="truncate">{match.request?.title}</span>
                               </Link>
                               <span className="text-sm font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded">
-                                {match.request?.reward.toLocaleString()}원
+                                {match.request?.reward.toLocaleString()}{match.request?.currency === 'KRW' ? '원' : '$'}
                               </span>
                             </div>
                             <div className="text-xs text-gray-600 mt-1 flex items-center">
-                              <span className="mr-1">요청자:</span>
+                              <span className="mr-1">{t('mypage.carrier.requester')}:</span>
                               <span className="font-medium">
-                                {match.request?.profiles?.nickname || '이름 없음'}
+                                {match.request?.profiles?.nickname || t('mypage.carrier.noName')}
                               </span>
                               <span className="mx-1 text-gray-400">•</span>
                               <span className="text-gray-500">
