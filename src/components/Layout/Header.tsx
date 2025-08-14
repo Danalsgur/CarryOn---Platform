@@ -203,7 +203,7 @@ export default function Header() {
               title={t('common.profileMenu')}
             >
               <div className="w-7 h-7 rounded-full bg-brand text-white font-semibold flex items-center justify-center text-sm">
-                {(profile?.nickname?.[0] || 'M').toUpperCase()}
+              {(profile?.nickname?.[0] || 'M').toUpperCase()}
               </div>
               <span className="text-text-secondary font-medium">{profile?.nickname || t('common.profile')}</span>
             </button>

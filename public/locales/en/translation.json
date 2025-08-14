@@ -169,6 +169,70 @@
     "hasApplicants": "Has Applicants",
     "waiting": "Waiting"
   },
+  "requestNew": {
+    "pageTitle": "Create Request",
+    "requestTitle": "Request Title",
+    "titlePlaceholder": "Enter request title (max 10 characters)",
+    "destination": "Destination",
+    "items": "Items",
+    "addItem": "+ Add Item",
+    "totalPrice": "Total Price: {{price}}",
+    "suggestedReward": "Suggested Reward: {{price}}",
+    "reward": "Reward",
+    "rewardPlaceholder": "Reward (min ₩15,000)",
+    "receiveDateRange": "Receive Date Range",
+    "selectDate": "Select Date",
+    "chatLink": "1:1 Open Chat Link *",
+    "chatLinkPlaceholder": "https://open.kakao.com/o/s...",
+    "chatLinkGuide": {
+      "title": "How to create KakaoTalk open chat link",
+      "step1": "Open KakaoTalk app and go to Chat tab > Open Chat",
+      "step2": "Select Create 1:1 Chat Room",
+      "step3": "Set chat room name (e.g. CarryOn Delivery Inquiry)",
+      "step4": "Turn off search permission",
+      "step5": "Copy Chat Room > Chat Room Info > Chat Room Link",
+      "note": "* The link will be used for 1:1 contact with the carrier"
+    },
+    "description": "Description (optional)",
+    "submit": "Create Request",
+    "errors": {
+      "titleRequired": "Please enter a request title.",
+      "titleInvalid": "Request title is invalid.",
+      "rewardMinimum": "Reward must be at least 15,000 won.",
+      "chatLinkRequired": "Please enter an open chat link."
+    },
+    "sizeGuide": {
+      "small": {
+        "label": "Small",
+        "volume": "Up to 3L / Max dimension 15cm",
+        "examples": "Cosmetics, medicine, AirPods, phone, small snacks",
+        "maxQuantity": 5
+      },
+      "medium": {
+        "label": "Medium",
+        "volume": "3-7L / Max dimension 25cm",
+        "examples": "MacBook, shoes, thin clothes, books",
+        "maxQuantity": 3
+      },
+      "large": {
+        "label": "Large",
+        "volume": "Over 7L / Dimension over 25cm",
+        "examples": "Monitor, outerwear, bags, large merchandise",
+        "maxQuantity": 1
+      }
+    },
+    "itemFields": {
+      "name": "Item Name",
+      "namePlaceholder": "Item name",
+      "url": "URL (optional)",
+      "urlPlaceholder": "Product URL",
+      "price": "Price",
+      "pricePlaceholder": "Item price",
+      "size": "Size",
+      "quantity": "Quantity",
+      "remove": "Remove"
+    }
+  },
   "trip": {
     "destination": "Destination",
     "departureDate": "Departure Date",

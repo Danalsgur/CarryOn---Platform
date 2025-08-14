@@ -169,6 +169,70 @@
     "hasApplicants": "\uc9c0\uc6d0\uc790 \uc788\uc74c",
     "waiting": "\ub300\uae30\uc911"
   },
+  "requestNew": {
+    "pageTitle": "요청 등록하기",
+    "requestTitle": "요청 제목",
+    "titlePlaceholder": "요청 제목을 입력하세요 (최대 10자)",
+    "destination": "목적지",
+    "items": "물품",
+    "addItem": "+ 물품 추가",
+    "totalPrice": "총 가격: {{price}}",
+    "suggestedReward": "추천 수고비: {{price}}",
+    "reward": "수고비",
+    "rewardPlaceholder": "수고비 (최소 ₩15,000)",
+    "receiveDateRange": "수령 기간",
+    "selectDate": "날짜 선택",
+    "chatLink": "1:1 오픈채팅 링크 *",
+    "chatLinkPlaceholder": "https://open.kakao.com/o/s...",
+    "chatLinkGuide": {
+      "title": "카카오톡 오픈채팅 링크 만드는 방법",
+      "step1": "카카오톡 앱을 열고 채팅 탭 > 오픈채팅 이동",
+      "step2": "1:1 채팅방 만들기 선택",
+      "step3": "채팅방 이름 설정 (예: CarryOn 배송 문의)",
+      "step4": "검색 허용 끄기",
+      "step5": "채팅방 > 채팅방 정보 > 채팅방 링크 복사",
+      "note": "* 링크는 캐리어와의 1:1 연락에 사용됩니다"
+    },
+    "description": "설명 (선택사항)",
+    "submit": "요청 등록하기",
+    "errors": {
+      "titleRequired": "요청 제목을 입력해주세요.",
+      "titleInvalid": "요청 제목이 유효하지 않습니다.",
+      "rewardMinimum": "수고비는 최소 15,000원 이상이어야 합니다.",
+      "chatLinkRequired": "오픈채팅 링크를 입력해주세요."
+    },
+    "sizeGuide": {
+      "small": {
+        "label": "소형",
+        "volume": "3L 이하 / 최대 길이 15cm",
+        "examples": "화장품, 의약품, 에어팟, 휴대폰, 작은 간식",
+        "maxQuantity": 5
+      },
+      "medium": {
+        "label": "중형",
+        "volume": "3-7L / 최대 길이 25cm",
+        "examples": "맥북, 신발, 얇은 옷, 책",
+        "maxQuantity": 3
+      },
+      "large": {
+        "label": "대형",
+        "volume": "7L 초과 / 길이 25cm 초과",
+        "examples": "모니터, 아우터, 가방, 대형 굿즈",
+        "maxQuantity": 1
+      }
+    },
+    "itemFields": {
+      "name": "물품명",
+      "namePlaceholder": "물품명",
+      "url": "URL (선택사항)",
+      "urlPlaceholder": "상품 URL",
+      "price": "가격",
+      "pricePlaceholder": "물품 가격",
+      "size": "크기",
+      "quantity": "수량",
+      "remove": "삭제"
+    }
+  },
   "trip": {
     "destination": "목적지",
     "departureDate": "출발일",
