@@ -17,7 +17,8 @@
     "notifications": "Notifications",
     "markAllAsRead": "Mark All as Read",
     "noNotifications": "No notifications",
-    "loginSignup": "Login / Sign Up"
+    "loginSignup": "Login / Sign Up",
+    "loading": "Loading..."
   },
   "navigation": {
     "home": "Home",
@@ -273,6 +274,16 @@
     "switchTo": "Switch to {{language}}",
     "ko": "Korean",
     "en": "English"
+  },
+  "tripEdit": {
+    "pageTitle": "Edit Trip",
+    "goBack": "Back to My Page",
+    "saveChanges": "Save Changes",
+    "notEditable": "Cannot Edit",
+    "deleteTrip": "Delete Trip",
+    "deleting": "Deleting...",
+    "deleteConfirmTitle": "Confirm Delete",
+    "deleteConfirmDesc": "Are you sure you want to delete this trip?"
   },
   "cities": {
     "london": "London",

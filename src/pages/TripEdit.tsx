@@ -4,10 +4,12 @@ import { supabase } from '../supabase'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { AlertCircle, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-const DESTINATIONS = ['런던', '뉴욕', '파리']
+const DEST_KEYS = ['london', 'newYork', 'paris'] as const
 
 export default function TripEdit() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
 
@@ -159,24 +161,24 @@ export default function TripEdit() {
     }
   }
   
-  if (loading) return <div className="p-4">불러오는 중...</div>
+  if (loading) return <div className="p-4">{t('common.loading')}</div>
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-text-primary">여정 수정</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">{t('tripEdit.pageTitle')}</h1>
       
       {hasMatch && (
         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
           <div className="flex items-start">
             <AlertCircle className="text-amber-500 mr-2 mt-0.5" size={18} />
             <div>
-              <p className="font-medium text-amber-800">매칭된 요청이 있는 여정</p>
+              <p className="font-medium text-amber-800">{t('tripEdit.notEditable')}</p>
               <p className="text-sm text-amber-700 mt-1">
-                매칭된 요청이 있어 수정할 수 없습니다.
+                {t('tripEdit.notEditable')}
               </p>
               {matchDetails?.request && (
                 <div className="mt-2 p-3 bg-white rounded border border-amber-200">
-                  <p className="font-medium text-sm">매칭된 요청 정보:</p>
+                  <p className="font-medium text-sm">{t('request.matchComplete')}</p>
                   <p className="text-sm mt-1 truncate">{matchDetails.request.title}</p>
                   <p className="text-sm text-gray-600 mt-1">
                     {(() => {
@@ -193,15 +195,15 @@ export default function TripEdit() {
           </div>
         </div>
       )}
-      
+
       {!hasMatch && matchDetails?.pendingCount > 0 && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-start">
             <AlertCircle className="text-blue-500 mr-2 mt-0.5" size={18} />
             <div>
-              <p className="font-medium text-blue-800">신청 중인 요청이 있는 여정</p>
+              <p className="font-medium text-blue-800">{t('mypage.carrier.pendingRequests')}</p>
               <p className="text-sm text-blue-700 mt-1">
-                현재 {matchDetails.pendingCount}개의 신청 중인 요청이 있습니다. 여정을 수정해도 신청 정보는 유지됩니다.
+                {t('mypage.carrier.pendingCount', { count: matchDetails.pendingCount })}
               </p>
             </div>
           </div>
@@ -209,54 +211,57 @@ export default function TripEdit() {
       )}
 
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">출발 도시</label>
+        <div className="mb-4">
+          <label className="block mb-2 text-sm font-medium text-text-primary">
+            {t('tripNew.fromCity')}
+          </label>
           <input
             type="text"
-            value="서울"
-            disabled
-            className="w-full border p-2 rounded bg-gray-100"
+            value={t('cities.seoul')}
+            disabled={hasMatch}
+            className={`w-full px-4 py-2 border border-gray-300 rounded-control shadow-control ${hasMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">도착 도시</label>
+        <div className="mb-4">
+          <label className="block mb-2 text-sm font-medium text-text-primary">
+            {t('tripNew.toCity')}
+          </label>
           <select
             value={toCity}
             onChange={(e) => setToCity(e.target.value)}
             className={`w-full border p-2 rounded ${hasMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             disabled={hasMatch}
           >
-            {DESTINATIONS.map((city) => (
-              <option key={city} value={city}>{city}</option>
+            {DEST_KEYS.map((key) => (
+              <option key={key} value={key}>{t(`cities.${key}`)}</option>
             ))}
           </select>
         </div>
 
         <div className="mb-4">
           <label className="block mb-2 text-sm font-medium text-text-primary">
-            출발 날짜
+            {t('tripNew.departureDate')}
           </label>
           <input
             type="date"
-            value={departureDate}
+          value={departureDate}
             onChange={(e) => setDepartureDate(e.target.value)}
             disabled={hasMatch}
             className={`w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200 ${hasMatch ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-          />
+        />
         </div>
 
         <Input
-          label="예약번호"
+          label={t('tripNew.reservationCode')}
           value={reservationCode}
           setValue={(value) => setReservationCode(value.toUpperCase())}
-          placeholder="예: ABC123"
+          placeholder={t('tripNew.reservationCodePlaceholder')}
           maxLength={6}
           disabled={hasMatch}
         />
-        {!hasMatch && <p className="text-xs text-gray-500 -mt-3 mb-3">예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합입니다.</p>}
+        {!hasMatch && <p className="text-xs text-gray-500 -mt-3 mb-3">{t('tripNew.reservationCodeNote')}</p>}
 
-        {/* 오류 메시지 */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start mb-4">
             <AlertCircle className="shrink-0 w-5 h-5 mr-2 mt-0.5" />
@@ -264,29 +269,23 @@ export default function TripEdit() {
           </div>
         )}
         
-        {/* 버튼 그룹 */}
         <div className="mt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            {/* 마이페이지로 돌아가기 버튼 */}
             <Button 
               variant="outline" 
               className="sm:order-1 py-2.5 w-full"
               onClick={() => navigate('/mypage')}
             >
-              마이페이지로 돌아가기
+              {t('tripEdit.goBack')}
             </Button>
-            
-            {/* 수정 완료 버튼 */}
             <Button 
               onClick={handleUpdate}
               className="sm:order-2 py-2.5 w-full" 
               disabled={hasMatch || loading}
             >
-              {hasMatch ? '수정 불가' : '수정 완료'}
+              {hasMatch ? t('tripEdit.notEditable') : t('tripEdit.saveChanges')}
             </Button>
           </div>
-          
-          {/* 삭제 버튼 - 매칭 중인 요청이 하나도 없을 때만 활성화 */}
           {(!hasMatch && !matchDetails?.pendingCount) && (
             <Button 
               variant="destructive" 
@@ -294,18 +293,17 @@ export default function TripEdit() {
               onClick={() => setShowDeleteConfirm(true)}
             >
               <Trash2 size={16} />
-              여정 삭제하기
+              {t('tripEdit.deleteTrip')}
             </Button>
           )}
         </div>
         
-        {/* 삭제 확인 모달 */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-              <h3 className="text-lg font-bold mb-2">여정 삭제 확인</h3>
+              <h3 className="text-lg font-bold mb-2">{t('tripEdit.deleteConfirmTitle')}</h3>
               <p className="text-gray-700 mb-4">
-                정말 이 여정을 삭제하시겠습니까?
+                {t('tripEdit.deleteConfirmDesc')}
               </p>
               <div className="flex justify-end gap-2">
                 <Button 
@@ -313,14 +311,14 @@ export default function TripEdit() {
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleteLoading}
                 >
-                  취소
+                  {t('common.cancel')}
                 </Button>
                 <Button 
                   variant="destructive" 
                   onClick={handleDelete}
                   disabled={deleteLoading}
                 >
-                  {deleteLoading ? '삭제 중...' : '삭제하기'}
+                  {deleteLoading ? t('tripEdit.deleting') : t('tripEdit.deleteTrip')}
                 </Button>
               </div>
             </div>

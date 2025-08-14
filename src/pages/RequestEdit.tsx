@@ -10,8 +10,9 @@ import { DateRange, RangeKeyDict } from 'react-date-range'
 import { calculateSuggestedReward } from '../utils/rewardCalculator'
 import 'react-date-range/dist/styles.css'
 import 'react-date-range/dist/theme/default.css'
+import { useTranslation } from 'react-i18next'
 
-const CITIES = ['런던', '뉴욕', '파리']
+const CITY_KEYS = ['london', 'newYork', 'paris'] as const
 
 const SIZE_PRESETS = [
   { key: 'small', label: '소형', volume: '~3L / 한 변 15cm 이하', examples: '화장품, 약, 에어팟', maxQuantity: 5 },
@@ -28,13 +29,14 @@ type Item = {
 }
 
 export default function RequestEdit() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
 
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
-  const [destination, setDestination] = useState(CITIES[0])
+  const [destination, setDestination] = useState(CITY_KEYS[0])
   const [currency, setCurrency] = useState('KRW')
   const [reward, setReward] = useState('')
   const [items, setItems] = useState<Item[]>([])
@@ -169,15 +171,15 @@ export default function RequestEdit() {
     else navigate('/mypage')
   }
 
-  if (loading) return <div className="p-4">불러오는 중...</div>
+  if (loading) return <div className="p-4">{t('common.loading')}</div>
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-text-primary">요청 수정</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">{t('request.editRequest')}</h1>
 
       <div className="space-y-4">
         <div className="mb-4">
-          <label className="block mb-1 text-sm font-medium text-text-primary">요청 제목</label>
+          <label className="block mb-1 text-sm font-medium text-text-primary">{t('requestNew.requestTitle')}</label>
           <div className="relative">
             <input
               type="text"
@@ -188,7 +190,7 @@ export default function RequestEdit() {
               }}
               maxLength={10}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${titleError ? 'border-red-300 focus:border-red-300 focus:ring-red-200' : 'border-gray-300 focus:border-blue-300 focus:ring-blue-200'}`}
-              placeholder="요청 제목을 입력하세요"
+              placeholder={t('requestNew.titlePlaceholder')}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <span className="text-xs text-text-secondary">{title.length}/10</span>
@@ -203,14 +205,14 @@ export default function RequestEdit() {
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-text-primary">도착 도시</label>
+          <label className="block mb-1 text-sm font-medium text-text-primary">{t('requestNew.destination')}</label>
           <select
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
             className="border rounded px-3 py-2 w-full"
           >
-            {CITIES.map((city) => (
-              <option key={city} value={city}>{city}</option>
+            {CITY_KEYS.map((key) => (
+              <option key={key} value={t(`cities.${key}`)}>{t(`cities.${key}`)}</option>
             ))}
           </select>
         </div>
@@ -221,32 +223,32 @@ export default function RequestEdit() {
             onClick={() => setShowSizeGuide(true)}
             className="text-xs text-blue-600 underline"
           >
-            사이즈 가이드 보기
+            {t('requestNew.viewSizeGuide', { defaultValue: 'View Size Guide' })}
           </button>
         </div>
 
         {showSizeGuide && (
           <div className="border border-blue-200 bg-white p-4 rounded-xl text-sm text-blue-900">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold">사이즈 가이드</h3>
-              <button onClick={() => setShowSizeGuide(false)} className="text-blue-600 text-xs">닫기</button>
+              <h3 className="font-bold">{t('requestNew.sizeGuideTitle', { defaultValue: 'Size Guide' })}</h3>
+              <button onClick={() => setShowSizeGuide(false)} className="text-blue-600 text-xs">{t('common.cancel')}</button>
             </div>
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="py-1">구분</th>
-                  <th className="py-1">부피 기준</th>
-                  <th className="py-1">예시</th>
-                  <th className="py-1">수량 제한</th>
+                  <th className="py-1">{t('requestNew.itemFields.size')}</th>
+                  <th className="py-1">{t('requestNew.sizeGuide.small.volume')}</th>
+                  <th className="py-1">{t('requestNew.itemFields.name')}</th>
+                  <th className="py-1">{t('requestNew.itemFields.quantity')}</th>
                 </tr>
               </thead>
               <tbody>
-                {SIZE_PRESETS.map((s) => (
-                  <tr key={s.key} className="border-b">
-                    <td className="py-1 font-medium">{s.label}</td>
-                    <td className="py-1">{s.volume}</td>
-                    <td className="py-1">{s.examples}</td>
-                    <td className="py-1">최대 {s.maxQuantity}개</td>
+                {[{k:'small'},{k:'medium'},{k:'large'}].map(({k}) => (
+                  <tr key={k} className="border-b">
+                    <td className="py-1 font-medium">{t(`requestNew.sizeGuide.${k}.label`)}</td>
+                    <td className="py-1">{t(`requestNew.sizeGuide.${k}.volume`)}</td>
+                    <td className="py-1">{t(`requestNew.sizeGuide.${k}.examples`)}</td>
+                    <td className="py-1">{t('validation.maxLength', { field: t('requestNew.itemFields.quantity'), length: getMaxQuantityForSize(t(`requestNew.sizeGuide.${k}.label`)) }).replace(' characters', '')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -255,7 +257,7 @@ export default function RequestEdit() {
         )}
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-text-primary">요청 품목</label>
+          <label className="block mb-1 text-sm font-medium text-text-primary">{t('requestNew.requestItems')}</label>
           <div className="space-y-4">
             {items.map((item, idx) => {
               const maxQuantity = getMaxQuantityForSize(item.size)
@@ -268,22 +270,22 @@ export default function RequestEdit() {
                       </button>
                     )}
                   </div>
-                  <div className="font-semibold text-blue-700 mb-2">품목 {idx + 1}</div>
+                  <div className="font-semibold text-blue-700 mb-2">{t('requestNew.itemNumber', { number: idx + 1 })}</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
-                      placeholder="이름 *"
+                      placeholder={t('requestNew.itemNamePlaceholder')}
                       value={item.name}
                       onChange={(e) => updateItem(idx, 'name', e.target.value)}
                       className="border p-2 rounded w-full"
                     />
                     <input
-                      placeholder="URL (선택)"
+                      placeholder={t('requestNew.itemUrlPlaceholder')}
                       value={item.url}
                       onChange={(e) => updateItem(idx, 'url', e.target.value)}
                       className="border p-2 rounded w-full"
                     />
                     <input
-                      placeholder={navigator.language?.toLowerCase().startsWith('ko') ? '가격 * (원)' : 'Price * (KRW)'}
+                      placeholder={t('requestNew.itemPricePlaceholder')}
                       value={item.price}
                       onChange={(e) => {
                         const onlyNums = e.target.value.replace(/[^\d]/g, '')
@@ -297,13 +299,13 @@ export default function RequestEdit() {
                       onChange={(e) => updateItem(idx, 'size', e.target.value)}
                       className="border p-2 rounded w-full"
                     >
-                      <option value="">크기 *</option>
+                      <option value="">{t('requestNew.itemSizePlaceholder')}</option>
                       {SIZE_PRESETS.map((s) => (
                         <option key={s.key} value={s.label}>{s.label}</option>
                       ))}
                     </select>
                     <input
-                      placeholder={`수량 * (최대 ${maxQuantity})`}
+                      placeholder={t('requestNew.itemQuantityPlaceholder', { max: maxQuantity })}
                       value={item.quantity}
                       onChange={(e) => {
                         const val = e.target.value.replace(/[^\d]/g, '')
@@ -316,10 +318,10 @@ export default function RequestEdit() {
               )
             })}
           </div>
-          <Button onClick={addItem} size="sm" variant="outline" className="mt-3">+ 품목 추가</Button>
-          <p className="text-base font-semibold mt-4 text-right">{navigator.language?.toLowerCase().startsWith('ko') ? `총 가격: ${formatNumberWithComma(getTotalPrice())}원` : `Total: ${formatNumberWithComma(getTotalPrice())} KRW`}</p>
+          <Button onClick={addItem} size="sm" variant="outline" className="mt-3">{t('requestNew.addItem')}</Button>
+          <p className="text-base font-semibold mt-4 text-right">{t('requestNew.totalPrice', { price: formatNumberWithComma(getTotalPrice()) })}</p>
           <p className="text-sm text-blue-700 font-semibold text-right">
-            {navigator.language?.toLowerCase().startsWith('ko') ? `추천 수고비: ${formatNumberWithComma(getSuggestedReward())}원` : `Suggested Reward: ${formatNumberWithComma(getSuggestedReward())} KRW`}
+            {t('requestNew.suggestedReward', { reward: formatNumberWithComma(getSuggestedReward()) })}
           </p>
         </div>
 
@@ -339,14 +341,14 @@ export default function RequestEdit() {
               setReward(formatted)
             }}
             className="border rounded px-3 py-2 w-full"
-            placeholder="수고비 (최소 ₩15,000)"
+            placeholder={t('requestNew.rewardPlaceholder')}
           />
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-text-primary">수령 날짜 범위</label>
+          <label className="block mb-1 text-sm font-medium text-text-primary">{t('requestNew.receiveDateRange')}</label>
           <button onClick={() => setShowCalendar(!showCalendar)} className="flex items-center gap-2 text-blue-600 text-sm mb-2">
-            <CalendarIcon size={16} /> 날짜 선택
+            <CalendarIcon size={16} /> {t('requestNew.selectDate')}
           </button>
           {showCalendar && (
             <DateRange
@@ -366,22 +368,22 @@ export default function RequestEdit() {
         </div>
 
         <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium text-text-primary">1:1 오픈채팅 링크</label>
+          <label className="block mb-2 text-sm font-medium text-text-primary">{t('requestNew.chatUrlLabel')}</label>
           <input
             type="text"
             value={chatUrl}
             onChange={(e) => setChatUrl(e.target.value)}
-            placeholder="카카오톡 오픈채팅 링크를 입력하세요"
+            placeholder={t('requestNew.chatUrlPlaceholder')}
             className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
           />
         </div>
         
         <div className="mb-4">
-          <label className="block mb-2 text-sm font-medium text-text-primary">설명 (선택)</label>
+          <label className="block mb-2 text-sm font-medium text-text-primary">{t('requestNew.descriptionLabel')}</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="추가 설명이 필요하면 입력하세요"
+            placeholder={t('requestNew.descriptionPlaceholder')}
             className="w-full px-4 py-2 border border-gray-300 rounded-control shadow-control focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all duration-200"
             rows={3}
           />
@@ -389,9 +391,7 @@ export default function RequestEdit() {
 
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
-        <Button onClick={handleSubmit} className="mt-4">
-          요청 수정하기
-        </Button>
+        <Button onClick={handleSubmit} className="mt-4">{t('request.editRequest')}</Button>
       </div>
     </div>
   )

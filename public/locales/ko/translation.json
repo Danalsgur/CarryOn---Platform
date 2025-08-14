@@ -17,7 +17,8 @@
     "notifications": "알림",
     "markAllAsRead": "모두 읽음 표시",
     "noNotifications": "알림이 없습니다",
-    "loginSignup": "로그인 / 회원가입"
+    "loginSignup": "로그인 / 회원가입",
+    "loading": "불러오는 중..."
   },
   "navigation": {
     "home": "홈",
@@ -248,6 +249,16 @@
     "matchedRequests": "매칭된 요청",
     "pendingRequests": "신청 중인 요청",
     "noRequests": "요청이 없습니다"
+  },
+  "tripEdit": {
+    "pageTitle": "여정 수정",
+    "goBack": "마이페이지로 돌아가기",
+    "saveChanges": "수정 완료",
+    "notEditable": "수정 불가",
+    "deleteTrip": "여정 삭제하기",
+    "deleting": "삭제 중...",
+    "deleteConfirmTitle": "여정 삭제 확인",
+    "deleteConfirmDesc": "정말 이 여정을 삭제하시겠습니까?"
   },
   "validation": {
     "required": "필수 항목입니다",
