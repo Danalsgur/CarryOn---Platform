@@ -115,27 +115,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      console.log('👋 로그아웃 시도됨 - 모바일:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-      
-      // 즉시 홈으로 리다이렉트 (모바일에서 더 안정적)
-      console.log('🌐 즉시 리다이렉트 시도')
-      window.location.replace('/')
-      
-      // 백그라운드에서 정리 작업
-      setTimeout(async () => {
-        try {
-          setUser(null)
-          setProfile(null)
-          await supabase.auth.signOut()
-          console.log('✅ 백그라운드 정리 완료')
-        } catch (err) {
-          console.error('❌ 백그라운드 정리 오류:', err)
+      console.log('👋 로그아웃 시도')
+      // 1) Supabase 세션 종료 (완료될 때까지 대기)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('❌ supabase.auth.signOut 오류:', error)
+      } else {
+        console.log('✅ supabase.auth.signOut 완료')
+      }
+
+      // 2) 로컬 상태 정리
+      setUser(null)
+      setProfile(null)
+
+      // 3) 로컬 스토리지에서 Supabase 관련 토큰 제거 (모바일 사파리 대응)
+      try {
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i) || ''
+          if (key.startsWith('sb-') || key.toLowerCase().includes('supabase')) {
+            keysToRemove.push(key)
+          }
         }
-      }, 0)
-      
+        keysToRemove.forEach((k) => {
+          console.log('🗑️ localStorage 제거:', k)
+          localStorage.removeItem(k)
+        })
+      } catch (lsErr) {
+        console.warn('⚠️ localStorage 정리 중 문제:', lsErr)
+      }
+
+      // 4) 하드 리다이렉트 (replace로 히스토리 대체)
+      console.log('🌐 하드 리다이렉트 실행')
+      window.location.replace('/')
     } catch (err) {
-      console.error('❌ 로그아웃 중 예외 발생:', err)
-      // 오류가 발생해도 홈으로 이동
+      console.error('❌ 로그아웃 처리 중 예외:', err)
       window.location.replace('/')
     }
   }
