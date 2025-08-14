@@ -317,6 +317,9 @@ export default function RequestList() {
               cardStyle = "border-2 border-blue-500 p-4 rounded-xl bg-blue-50 shadow hover:shadow-md transition-all duration-200";
             }
             
+            const cityKey = CITY_KEY_MAP[req.destination_city]
+            const cityLabel = cityKey ? t(`cities.${cityKey}`) : req.destination_city
+            
             return (
               <li
                 key={req.id}
@@ -330,7 +333,7 @@ export default function RequestList() {
                 
                 <div className="mt-2 flex items-center text-sm text-gray-600">
                   <MapPin size={16} className="inline mr-1 text-gray-400" />
-                  <span>{req.destination_city}</span>
+                  <span>{cityLabel}</span>
                   <span className="mx-2">•</span>
                   <Coins size={14} className="mr-1.5" />
                   <span className="font-medium">
@@ -340,7 +343,7 @@ export default function RequestList() {
                 
                 <div className="mt-2 flex items-center text-xs text-gray-500">
                   <Calendar size={14} className="inline mr-1 text-gray-400" />
-                  <span>{t('request.receiveDate')}: {formatDate(req.receive_start)} ~ {formatDate(req.receive_end)}</span>
+                  <span>{t('request.receiveDate')}: {dayjs(req.receive_start).format('YYYY.MM.DD')} ~ {dayjs(req.receive_end).format('YYYY.MM.DD')}</span>
                 </div>
                 
                 <div className="mt-2 flex justify-between items-center">
