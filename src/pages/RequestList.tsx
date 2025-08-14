@@ -141,8 +141,6 @@ export default function RequestList() {
           }
           
           // 캐리어 지원 상태 계산
-          // 1. 요청 status가 'matched'면 무조건 매칭 완료 상태로 처리
-          // 2. 그렇지 않은 경우 matches 배열 확인
           const hasAcceptedCarrier = item.status === 'matched' || item.matches?.some(m => m.status === 'accepted') || false
           const hasApplicants = item.status !== 'matched' && ((item.matches?.length || 0) > 0)
           
@@ -153,12 +151,8 @@ export default function RequestList() {
           }
         })
 
-        // 검색 기능 제거
-        let filteredResults = result
-        
-        // 지원자 필터링 제거
-
         // 정렬 적용
+        let filteredResults = result
         if (sortOption === 'reward') {
           filteredResults.sort((a, b) => 
             sortDirection === 'desc' ? b.reward - a.reward : a.reward - b.reward
@@ -212,11 +206,6 @@ export default function RequestList() {
         {t('request.waiting')}
       </span>
     )
-  }
-
-  // 날짜 포맷팅 함수
-  const formatDate = (dateString: string) => {
-    return dayjs(dateString).format('YYYY.MM.DD')
   }
 
   // 정렬 방향 토글 함수
