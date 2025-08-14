@@ -179,7 +179,13 @@ export default function TripEdit() {
                   <p className="font-medium text-sm">매칭된 요청 정보:</p>
                   <p className="text-sm mt-1 truncate">{matchDetails.request.title}</p>
                   <p className="text-sm text-gray-600 mt-1">
-                    수고비: {matchDetails.request.reward.toLocaleString()}{matchDetails.request.currency === 'KRW' ? '원' : '$'}
+                    {(() => {
+                      const isKo = navigator.language?.toLowerCase().startsWith('ko')
+                      const cur = matchDetails.request.currency
+                      const amt = matchDetails.request.reward.toLocaleString()
+                      if (cur === 'KRW') return `수고비: ${amt}${isKo ? '원' : ' KRW'}`
+                      return `수고비: ${amt} ${cur}`
+                    })()}
                   </p>
                 </div>
               )}

@@ -15,6 +15,15 @@ const CITY_KEY_MAP: Record<string, string> = {
   'Paris': 'paris',
 }
 
+function formatReward(amount: number, currency: string, localeCode: string) {
+  const isKo = localeCode?.toLowerCase().startsWith('ko')
+  if (currency === 'KRW') {
+    return isKo ? `${amount.toLocaleString()}원` : `${amount.toLocaleString()} KRW`
+  }
+  // default: show code suffix (e.g., USD, EUR)
+  return `${amount.toLocaleString()} ${currency}`
+}
+
 type RawRequest = {
   id: string
   title: string
@@ -48,7 +57,7 @@ type Request = {
 }
 
 export default function RequestList() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { loading: authLoading } = useAuth()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
@@ -326,7 +335,7 @@ export default function RequestList() {
                   <span className="mx-2">•</span>
                   <Coins size={14} className="mr-1.5" />
                   <span className="font-medium">
-                    {req.reward.toLocaleString()}원
+                    {formatReward(req.reward, req.currency, i18n.language)}
                   </span>
                 </div>
                 

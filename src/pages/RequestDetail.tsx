@@ -211,7 +211,7 @@ export default function RequestDetail() {
         <ul className="list-disc ml-5 space-y-2 text-sm text-text-secondary">
           {request.items.map((item, i) => (
             <li key={i}>
-              {item.name} - {item.price.toLocaleString()}원
+              {(() => { const isKo = navigator.language?.toLowerCase().startsWith('ko'); const amt = item.price.toLocaleString(); return isKo ? `${item.name} - ${amt}원` : `${item.name} - ${amt} KRW`; })()}
               {item.quantity && ` × ${item.quantity}개`}
               {item.size && ` (${item.size})`}
             </li>

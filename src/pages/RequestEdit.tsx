@@ -148,7 +148,7 @@ export default function RequestEdit() {
     }
 
     if (!reward || Number(reward.replace(/,/g, '')) < 10000) {
-      setError('수고비는 최소 10,000원 이상이어야 합니다.')
+      setError(navigator.language?.toLowerCase().startsWith('ko') ? '수고비는 최소 10,000원 이상이어야 합니다.' : 'Reward must be at least 10,000 KRW.')
       return
     }
 
@@ -283,7 +283,7 @@ export default function RequestEdit() {
                       className="border p-2 rounded w-full"
                     />
                     <input
-                      placeholder="가격 * (원)"
+                      placeholder={navigator.language?.toLowerCase().startsWith('ko') ? '가격 * (원)' : 'Price * (KRW)'}
                       value={item.price}
                       onChange={(e) => {
                         const onlyNums = e.target.value.replace(/[^\d]/g, '')
@@ -317,9 +317,9 @@ export default function RequestEdit() {
             })}
           </div>
           <Button onClick={addItem} size="sm" variant="outline" className="mt-3">+ 품목 추가</Button>
-          <p className="text-base font-semibold mt-4 text-right">총 가격: {formatNumberWithComma(getTotalPrice())}원</p>
+          <p className="text-base font-semibold mt-4 text-right">{navigator.language?.toLowerCase().startsWith('ko') ? `총 가격: ${formatNumberWithComma(getTotalPrice())}원` : `Total: ${formatNumberWithComma(getTotalPrice())} KRW`}</p>
           <p className="text-sm text-blue-700 font-semibold text-right">
-            추천 수고비: {formatNumberWithComma(getSuggestedReward())}원
+            {navigator.language?.toLowerCase().startsWith('ko') ? `추천 수고비: ${formatNumberWithComma(getSuggestedReward())}원` : `Suggested Reward: ${formatNumberWithComma(getSuggestedReward())} KRW`}
           </p>
         </div>
 

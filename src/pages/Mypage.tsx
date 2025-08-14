@@ -418,7 +418,7 @@ export default function Mypage() {
                       {/* 총 수고비 표시 */}
                       <div className="mt-3 text-sm font-medium text-gray-700 flex items-center justify-between">
                         <span>{t('mypage.carrier.totalReward')}</span>
-                        <span className="text-lg font-bold text-green-700">{totalReward.toLocaleString()}{trip.matches[0]?.request?.currency === 'KRW' ? '원' : '$'}</span>
+                        <span className="text-lg font-bold text-green-700">{(() => { const isKo = navigator.language?.toLowerCase().startsWith('ko'); const c = trip.matches[0]?.request?.currency; const amt = totalReward.toLocaleString(); if (c === 'KRW') return isKo ? `${amt}원` : `${amt} KRW`; return `${amt} ${c || ''}` })()}</span>
                       </div>
                       
                       {/* 매칭된 요청 목록 */}
@@ -435,7 +435,7 @@ export default function Mypage() {
                               <span className="truncate">{match.request?.title}</span>
                             </Link>
                             <span className="text-sm font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
-                              {match.request?.reward.toLocaleString()}{match.request?.currency === 'KRW' ? '원' : '$'}
+                              {(() => { const isKo = navigator.language?.toLowerCase().startsWith('ko'); const c = match.request?.currency; const amt = match.request?.reward?.toLocaleString() || '0'; if (c === 'KRW') return isKo ? `${amt}원` : `${amt} KRW`; return `${amt} ${c || ''}` })()}
                             </span>
                           </div>
                         ))}
@@ -465,7 +465,7 @@ export default function Mypage() {
                                 <span className="truncate">{match.request?.title}</span>
                               </Link>
                               <span className="text-sm font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded">
-                                {match.request?.reward.toLocaleString()}{match.request?.currency === 'KRW' ? '원' : '$'}
+                                {(() => { const isKo = navigator.language?.toLowerCase().startsWith('ko'); const c = match.request?.currency; const amt = match.request?.reward?.toLocaleString() || '0'; if (c === 'KRW') return isKo ? `${amt}원` : `${amt} KRW`; return `${amt} ${c || ''}` })()}
                               </span>
                             </div>
                             <div className="text-xs text-gray-600 mt-1 flex items-center">
