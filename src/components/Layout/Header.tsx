@@ -222,14 +222,14 @@ export default function Header() {
                     </div>
                   </div>
                   <div className="mt-3">
-                    <Link 
+                  <Link 
                       to="/profile" 
                       className="flex items-center justify-between w-full text-sm text-brand hover:text-brand-dark transition-colors duration-200"
                       onClick={() => setDropdownOpen(false)}
                     >
                       {t('common.profileSettings')}
                       <ChevronRight size={16} />
-                    </Link>
+                  </Link>
                   </div>
                 </div>
 
@@ -240,20 +240,20 @@ export default function Header() {
                     {t('navigation.carrierFeatures')}
                   </p>
                   <div className="space-y-1">
-                    <Link 
-                      to="/trip/new" 
+                  <Link 
+                    to="/trip/new" 
                       className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-brand-light/20 transition-colors duration-200 text-text-primary"
                       onClick={() => setDropdownOpen(false)}
-                    >
+                  >
                       <span className="text-brand">+</span> {t('navigation.createTrip')}
-                    </Link>
-                    <Link 
-                      to="/mypage?tab=carrier" 
+                  </Link>
+                  <Link 
+                    to="/mypage?tab=carrier" 
                       className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-brand-light/20 transition-colors duration-200 text-text-primary"
                       onClick={() => setDropdownOpen(false)}
-                    >
+                  >
                       {t('navigation.tripStatus')}
-                    </Link>
+                  </Link>
                   </div>
                 </div>
 
@@ -264,30 +264,28 @@ export default function Header() {
                     {t('navigation.buyerFeatures')}
                   </p>
                   <div className="space-y-1">
-                    <Link 
-                      to="/request/new" 
+                  <Link 
+                    to="/request/new" 
                       className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-brand-light/20 transition-colors duration-200 text-text-primary"
                       onClick={() => setDropdownOpen(false)}
-                    >
+                  >
                       <span className="text-brand">+</span> {t('navigation.createRequest')}
-                    </Link>
-                    <Link 
-                      to="/mypage?tab=buyer" 
+                  </Link>
+                  <Link 
+                    to="/mypage?tab=buyer" 
                       className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-brand-light/20 transition-colors duration-200 text-text-primary"
                       onClick={() => setDropdownOpen(false)}
-                    >
+                  >
                       {t('navigation.requestStatus')}
-                    </Link>
+                  </Link>
                   </div>
                 </div>
 
                 {/* 로그아웃 */}
                 <div className="p-4">
                   <button 
-                    onClick={() => {
-                      logout()
-                      setDropdownOpen(false)
-                      navigate('/')
+                    onClick={async () => {
+                      await logout()
                     }}
                     className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-red-50 text-red-600 transition-colors duration-200"
                   >
@@ -487,10 +485,8 @@ export default function Header() {
                 {/* 로그아웃 */}
                 <div className="pt-4 border-t border-gray-100">
                   <button 
-                    onClick={() => {
-                      logout()
-                      setMobileMenuOpen(false)
-                      navigate('/')
+                    onClick={async () => {
+                      await logout()
                     }}
                     className="flex items-center gap-3 w-full px-4 py-3 rounded-control hover:bg-red-50 text-red-600 transition-colors duration-200"
                   >
