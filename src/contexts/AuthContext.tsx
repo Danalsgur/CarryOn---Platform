@@ -115,30 +115,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      console.log('👋 로그아웃 시도됨')
+      console.log('👋 로그아웃 시도됨 - 모바일:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
       
-      // 먼저 상태 정리
-      setUser(null)
-      setProfile(null)
+      // 즉시 홈으로 리다이렉트 (모바일에서 더 안정적)
+      console.log('🌐 즉시 리다이렉트 시도')
+      window.location.replace('/')
       
-      // Supabase 로그아웃
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('❌ Supabase 로그아웃 오류:', error)
-      } else {
-        console.log('✅ Supabase 로그아웃 성공')
-      }
-      
-      // 모바일에서 더 안정적인 리다이렉트
-      console.log('🌐 브라우저 이동 시도함')
-      setTimeout(() => {
-        window.location.href = '/'
-      }, 100)
+      // 백그라운드에서 정리 작업
+      setTimeout(async () => {
+        try {
+          setUser(null)
+          setProfile(null)
+          await supabase.auth.signOut()
+          console.log('✅ 백그라운드 정리 완료')
+        } catch (err) {
+          console.error('❌ 백그라운드 정리 오류:', err)
+        }
+      }, 0)
       
     } catch (err) {
       console.error('❌ 로그아웃 중 예외 발생:', err)
       // 오류가 발생해도 홈으로 이동
-      window.location.href = '/'
+      window.location.replace('/')
     }
   }
 
