@@ -233,6 +233,11 @@
       "remove": "Remove"
     }
   },
+  "requestList": {
+    "title": "Request List",
+    "allCities": "All Cities",
+    "hideMatched": "Hide matched requests"
+  },
   "trip": {
     "destination": "Destination",
     "departureDate": "Departure Date",

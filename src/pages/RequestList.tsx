@@ -6,6 +6,15 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { Calendar, MapPin, Coins, ArrowUpDown, SlidersHorizontal, Clock } from 'lucide-react'
 
+const CITY_KEY_MAP: Record<string, string> = {
+  '런던': 'london',
+  '뉴욕': 'newYork',
+  '파리': 'paris',
+  'London': 'london',
+  'New York': 'newYork',
+  'Paris': 'paris',
+}
+
 type RawRequest = {
   id: string
   title: string
@@ -217,7 +226,7 @@ export default function RequestList() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-text-primary">요청 리스트</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">{t('requestList.title')}</h1>
       
       {/* 필터링 섹션 */}
       <div className="bg-white rounded-xl shadow p-4 mb-6">
@@ -230,10 +239,14 @@ export default function RequestList() {
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
             >
-              <option value="">모든 도시</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
-              ))}
+              <option value="">{t('requestList.allCities')}</option>
+              {cities.map(city => {
+                const key = CITY_KEY_MAP[city] || city
+                const label = CITY_KEY_MAP[city] ? t(`cities.${key}`) : city
+                return (
+                  <option key={city} value={city}>{label}</option>
+                )
+              })}
             </select>
           </div>
           
@@ -246,7 +259,7 @@ export default function RequestList() {
                 onChange={(e) => setHideCompleted(e.target.checked)}
                 className="rounded text-blue-500 focus:ring-blue-500"
               />
-              <span className="text-sm">매칭 완료 요청 가리기</span>
+              <span className="text-sm">{t('requestList.hideMatched')}</span>
             </label>
           </div>
           
