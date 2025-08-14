@@ -269,6 +269,11 @@
     "ko": "한국어",
     "en": "영어"
   },
+  "cities": {
+    "london": "런던",
+    "newYork": "뉴욕",
+    "paris": "파리"
+  },
   "mypage": {
     "tabs": {
       "buyer": "바이어용",

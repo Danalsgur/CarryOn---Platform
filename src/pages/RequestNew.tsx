@@ -14,7 +14,7 @@ import { validateTextInput } from '../utils/contentFilter'
 import { calculateSuggestedReward } from '../utils/rewardCalculator'
 import { useTranslation } from 'react-i18next'
 
-const CITIES = ['런던', '뉴욕', '파리']
+const CITY_KEYS = ['london', 'newYork', 'paris'] as const
 
 function formatNumberWithComma(num: number | string) {
   return Number(num).toLocaleString()
@@ -33,7 +33,7 @@ export default function RequestNew() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
-  const [destination, setDestination] = useState(CITIES[0])
+  const [destination, setDestination] = useState<string>('london')
   const [currency, setCurrency] = useState('KRW')
   const [reward, setReward] = useState('')
   const [items, setItems] = useState<Item[]>([{ name: '', url: '', price: '', size: '', quantity: '' }])
@@ -154,7 +154,7 @@ export default function RequestNew() {
     const payload = {
       user_id: user.id,
       title,
-      destination_city: destination,
+      destination_city: t(`cities.${destination}`),
       reward: Number(reward.replace(/,/g, '')),
       currency,
       items,
@@ -218,8 +218,8 @@ export default function RequestNew() {
             onChange={(e) => setDestination(e.target.value)}
             className="border rounded px-3 py-2 w-full"
           >
-            {CITIES.map((city) => (
-              <option key={city} value={city}>{city}</option>
+            {CITY_KEYS.map((key) => (
+              <option key={key} value={key}>{t(`cities.${key}`)}</option>
             ))}
           </select>
         </div>

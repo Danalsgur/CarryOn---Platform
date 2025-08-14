@@ -269,6 +269,11 @@
     "ko": "Korean",
     "en": "English"
   },
+  "cities": {
+    "london": "London",
+    "newYork": "New York",
+    "paris": "Paris"
+  },
   "mypage": {
     "tabs": {
       "buyer": "For Buyers",
