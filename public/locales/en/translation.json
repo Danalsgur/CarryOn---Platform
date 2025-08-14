@@ -277,7 +277,24 @@
   "cities": {
     "london": "London",
     "newYork": "New York",
-    "paris": "Paris"
+    "paris": "Paris",
+    "seoul": "Seoul"
+  },
+  "tripNew": {
+    "pageTitle": "Register Trip",
+    "fromCity": "Departure City",
+    "toCity": "Destination",
+    "departureDate": "Departure Date",
+    "reservationCode": "Reservation Code",
+    "reservationCodePlaceholder": "e.g., ABC123",
+    "reservationCodeNote": "Reservation code must be 6 characters (letters and/or numbers) and include at least one letter.",
+    "submit": "Register Trip",
+    "errors": {
+      "requiredFields": "Departure date and reservation code are required.",
+      "invalidPNR": "Reservation code must be 6 alphanumeric characters including at least one letter.",
+      "existingTrip": "An active trip already exists. You can register a new one after it is completed, cancelled, or the departure date has passed.",
+      "checkExistingError": "An error occurred while checking existing trips."
+    }
   },
   "mypage": {
     "tabs": {

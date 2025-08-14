@@ -277,7 +277,24 @@
   "cities": {
     "london": "런던",
     "newYork": "뉴욕",
-    "paris": "파리"
+    "paris": "파리",
+    "seoul": "서울"
+  },
+  "tripNew": {
+    "pageTitle": "여정 등록",
+    "fromCity": "출발 도시",
+    "toCity": "도착 도시",
+    "departureDate": "출발 날짜",
+    "reservationCode": "예약번호",
+    "reservationCodePlaceholder": "예: ABC123",
+    "reservationCodeNote": "예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합이며, 최소 한 글자의 알파벳을 포함해야 합니다.",
+    "submit": "여정 등록",
+    "errors": {
+      "requiredFields": "출발 날짜와 예약번호는 필수입니다.",
+      "invalidPNR": "예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합이어야 합니다.",
+      "existingTrip": "이미 등록된 여정이 있습니다. 완료되거나 취소되거나 출발일이 지나야 새로 등록할 수 있어요.",
+      "checkExistingError": "기존 여정 확인 중 오류가 발생했습니다."
+    }
   },
   "mypage": {
     "tabs": {

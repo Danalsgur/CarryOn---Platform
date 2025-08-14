@@ -6,35 +6,34 @@ import { supabase } from '../supabase'
 import Input from '../components/Input'
 import Button from '../components/Button'
 import { format } from 'date-fns'
+import { useTranslation } from 'react-i18next'
 
-const DESTINATIONS = ['런던', '뉴욕', '파리']
+const DEST_KEYS = ['london', 'newYork', 'paris'] as const
 
 export default function TripNew() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
-  const [toCity, setToCity] = useState(DESTINATIONS[0])
+  const [toCity, setToCity] = useState<string>('london')
   const [departureDate, setDepartureDate] = useState('')
   const [reservationCode, setReservationCode] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   // PNR 형식 검증 함수 (6자리 알파벳 또는 알파벳+숫자 조합)
   const validatePNR = (code: string): boolean => {
-    // 6자리 알파벳 또는 알파벳+숫자 조합 정규식
-    const pnrRegex = /^[A-Za-z0-9]{6}$/;
-    // 최소 하나의 알파벳을 포함하는지 확인
-    const hasLetter = /[A-Za-z]/.test(code);
-    
-    return pnrRegex.test(code) && hasLetter;
+    const pnrRegex = /^[A-Za-z0-9]{6}$/
+    const hasLetter = /[A-Za-z]/.test(code)
+    return pnrRegex.test(code) && hasLetter
   }
   
   const handleSubmit = async () => {
     if (!departureDate || !reservationCode) {
-      setError('출발 날짜와 예약번호는 필수입니다.')
+      setError(t('tripNew.errors.requiredFields'))
       return
     }
     
     // PNR 형식 검증
     if (!validatePNR(reservationCode)) {
-      setError('예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합이어야 합니다.')
+      setError(t('tripNew.errors.invalidPNR'))
       return
     }
 
@@ -56,7 +55,7 @@ export default function TripNew() {
       .maybeSingle()
 
     if (tripError) {
-      setError('기존 여정 확인 중 오류가 발생했습니다.')
+      setError(t('tripNew.errors.checkExistingError'))
       return
     }
 
@@ -66,17 +65,17 @@ export default function TripNew() {
       existingTrip.status !== 'cancelled' &&
       existingTrip.departure_date >= today
     ) {
-      setError('이미 등록된 여정이 있습니다. 완료되거나 취소되거나 출발일이 지나야 새로 등록할 수 있어요.')
+      setError(t('tripNew.errors.existingTrip'))
       return
     }
 
     const payload = {
       user_id: user.id,
-      from_city: '서울',
-      to_city: toCity,
+      from_city: t('cities.seoul'),
+      to_city: t(`cities.${toCity}`),
       departure_date: format(new Date(departureDate), 'yyyy-MM-dd'),
       reservation_code: reservationCode,
-      status: 'active', // ✅ status 기본값 설정
+      status: 'active',
     }
 
     const { error } = await supabase.from('trips').insert([payload])
@@ -87,51 +86,51 @@ export default function TripNew() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-text-primary">여정 등록</h1>
+      <h1 className="text-2xl font-bold mb-6 text-text-primary">{t('tripNew.pageTitle')}</h1>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">출발 도시</label>
+          <label className="block text-sm font-medium mb-1">{t('tripNew.fromCity')}</label>
           <input
             type="text"
-            value="서울"
+            value={t('cities.seoul')}
             disabled
             className="w-full border p-2 rounded bg-gray-100"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">도착 도시</label>
+          <label className="block text-sm font-medium mb-1">{t('tripNew.toCity')}</label>
           <select
             value={toCity}
             onChange={(e) => setToCity(e.target.value)}
             className="w-full border p-2 rounded"
           >
-            {DESTINATIONS.map((city) => (
-              <option key={city} value={city}>{city}</option>
+            {DEST_KEYS.map((key) => (
+              <option key={key} value={key}>{t(`cities.${key}`)}</option>
             ))}
           </select>
         </div>
 
         <Input
-          label="출발 날짜"
+          label={t('tripNew.departureDate')}
           value={departureDate}
           setValue={setDepartureDate}
           type="date"
         />
 
         <Input
-          label="예약번호"
+          label={t('tripNew.reservationCode')}
           value={reservationCode}
           setValue={(value) => setReservationCode(value.toUpperCase())}
-          placeholder="예: ABC123"
+          placeholder={t('tripNew.reservationCodePlaceholder')}
           maxLength={6}
         />
-        <p className="text-xs text-gray-500">예약번호는 6자리 알파벳 또는 알파벳과 숫자 조합입니다.</p>
+        <p className="text-xs text-gray-500">{t('tripNew.reservationCodeNote')}</p>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <Button onClick={handleSubmit}>여정 등록</Button>
+        <Button onClick={handleSubmit}>{t('tripNew.submit')}</Button>
       </div>
     </div>
   )
