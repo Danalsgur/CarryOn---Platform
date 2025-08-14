@@ -36,7 +36,7 @@ export default function RequestEdit() {
 
   const [title, setTitle] = useState('')
   const [titleError, setTitleError] = useState<string | null>(null)
-  const [destination, setDestination] = useState(CITY_KEYS[0])
+  const [destination, setDestination] = useState<string>('')
   const [currency, setCurrency] = useState('KRW')
   const [reward, setReward] = useState('')
   const [items, setItems] = useState<Item[]>([])
@@ -223,23 +223,23 @@ export default function RequestEdit() {
             onClick={() => setShowSizeGuide(true)}
             className="text-xs text-blue-600 underline"
           >
-            {t('requestNew.viewSizeGuide', { defaultValue: 'View Size Guide' })}
+            {t('requestNew.sizeGuide.title')}
           </button>
         </div>
 
         {showSizeGuide && (
           <div className="border border-blue-200 bg-white p-4 rounded-xl text-sm text-blue-900">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold">{t('requestNew.sizeGuideTitle', { defaultValue: 'Size Guide' })}</h3>
-              <button onClick={() => setShowSizeGuide(false)} className="text-blue-600 text-xs">{t('common.cancel')}</button>
+              <h3 className="font-bold">{t('requestNew.sizeGuide.title')}</h3>
+              <button onClick={() => setShowSizeGuide(false)} className="text-blue-600 text-xs">{t('common.close')}</button>
             </div>
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="py-1">{t('requestNew.itemFields.size')}</th>
-                  <th className="py-1">{t('requestNew.sizeGuide.small.volume')}</th>
-                  <th className="py-1">{t('requestNew.itemFields.name')}</th>
-                  <th className="py-1">{t('requestNew.itemFields.quantity')}</th>
+                  <th className="py-1">{t('requestNew.sizeGuide.category')}</th>
+                  <th className="py-1">{t('requestNew.sizeGuide.volumeCriteria')}</th>
+                  <th className="py-1">{t('requestNew.sizeGuide.examples')}</th>
+                  <th className="py-1">{t('requestNew.sizeGuide.quantityLimit')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,7 +248,7 @@ export default function RequestEdit() {
                     <td className="py-1 font-medium">{t(`requestNew.sizeGuide.${k}.label`)}</td>
                     <td className="py-1">{t(`requestNew.sizeGuide.${k}.volume`)}</td>
                     <td className="py-1">{t(`requestNew.sizeGuide.${k}.examples`)}</td>
-                    <td className="py-1">{t('validation.maxLength', { field: t('requestNew.itemFields.quantity'), length: getMaxQuantityForSize(t(`requestNew.sizeGuide.${k}.label`)) }).replace(' characters', '')}</td>
+                    <td className="py-1">{t('requestNew.sizeGuide.maxQuantity', { count: getMaxQuantityForSize(t(`requestNew.sizeGuide.${k}.label`)) })}</td>
                   </tr>
                 ))}
               </tbody>
