@@ -169,7 +169,7 @@ export default function Mypage() {
   if (loading) {
     return (
       <div className="w-full h-screen flex items-center justify-center text-gray-500">
-        마이페이지 불러오는 중...
+        {t('mypage.loading')}
       </div>
     )
   }
@@ -177,7 +177,7 @@ export default function Mypage() {
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
       <div className="flex flex-row items-center justify-between mb-2 sm:mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-text-primary">마이페이지</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{t('mypage.pageTitle')}</h1>
         <Button 
           variant="outline" 
           size="sm"
@@ -185,7 +185,7 @@ export default function Mypage() {
           className="flex items-center gap-1.5 text-sm border border-gray-300 px-3 py-1.5 rounded-md"
         >
           <Pencil size={15} />
-          프로필 수정
+          {t('mypage.editProfile')}
         </Button>
       </div>
 

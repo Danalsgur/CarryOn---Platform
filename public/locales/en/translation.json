@@ -308,40 +308,27 @@
     }
   },
   "mypage": {
+    "pageTitle": "My Page",
+    "loading": "Loading my page...",
+    "editProfile": "Edit Profile",
     "tabs": {
-      "buyer": "For Buyers",
-      "carrier": "For Carriers"
+      "buyer": "Buyer",
+      "carrier": "Carrier"
     },
     "buyer": {
       "myRequests": "My Requests",
-      "noRequests": "No requests yet",
-      "noRequestsDesc": "Want to buy something from abroad? Register a new request and find a carrier.",
+      "noRequests": "No requests registered",
+      "noRequestsDesc": "Register your first request!",
       "createNewRequest": "Create New Request",
-      "carrierSelected": "Carrier Selected",
-      "hasApplicants": "Has Applicants",
-      "waiting": "Waiting",
-      "reviewNeeded": "Review Needed",
-      "waitingForApplicants": "Waiting for applicants",
-      "selectedCarrier": "Selected Carrier",
-      "matchingTime": "Matching time"
+      "carrierSelected": "Carrier Selected"
     },
     "carrier": {
       "myTrips": "My Trips",
       "noTrips": "No trips registered",
-      "noTripsDesc": "Planning to travel abroad? Register your trip and earn rewards.",
-      "createNewTrip": "Register New Trip",
-      "tripToCity": "Trip to {{city}}",
-      "matched": "Matched",
-      "pendingCount": "Pending {{count}}",
-      "waiting": "Waiting",
-      "departure": "Departure",
-      "acceptedRequests": "Accepted Requests ({{count}})",
-      "pendingRequests": "Pending Requests ({{count}})",
-      "pending": "Pending",
-      "requester": "Requester",
-      "noName": "No name",
-      "totalReward": "Total Reward",
-      "matchedRequests": "Matched Requests"
+      "noTripsDesc": "Register your first trip!",
+      "createNewTrip": "Create New Trip",
+      "pendingRequests": "Pending Requests",
+      "pendingCount": "Currently {{count}} pending requests"
     }
   },
   "home": {

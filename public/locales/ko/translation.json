@@ -308,40 +308,27 @@
     }
   },
   "mypage": {
+    "pageTitle": "마이페이지",
+    "loading": "마이페이지 불러오는 중...",
+    "editProfile": "프로필 수정",
     "tabs": {
-      "buyer": "바이어용",
-      "carrier": "케리어용"
+      "buyer": "구매자",
+      "carrier": "캐리어"
     },
     "buyer": {
-      "myRequests": "내가 올린 요청",
-      "noRequests": "아직 등록한 요청이 없습니다",
-      "noRequestsDesc": "해외에서 구매하고 싶은 물건이 있으신가요? 새로운 요청을 등록하고 케리어를 찾아보세요.",
-      "createNewRequest": "새 요청 등록하기",
-      "carrierSelected": "케리어 선택 완료",
-      "hasApplicants": "지원자 있음",
-      "waiting": "대기중",
-      "reviewNeeded": "지원자 검토 필요",
-      "waitingForApplicants": "지원자 대기중",
-      "selectedCarrier": "선택된 케리어",
-      "matchingTime": "매칭 시간"
+      "myRequests": "내 요청",
+      "noRequests": "등록된 요청이 없습니다",
+      "noRequestsDesc": "첫 번째 요청을 등록해보세요!",
+      "createNewRequest": "새 요청 등록",
+      "carrierSelected": "캐리어 선택됨"
     },
     "carrier": {
-      "myTrips": "내 여정 목록",
-      "noTrips": "등록한 여정이 없습니다",
-      "noTripsDesc": "해외 여행 계획이 있으신가요? 여정을 등록하고 수고비를 벌어보세요.",
-      "createNewTrip": "새 여정 등록하기",
-      "tripToCity": "{{city}}행 여정",
-      "matched": "매칭됨",
-      "pendingCount": "신청중 {{count}}개",
-      "waiting": "대기중",
-      "departure": "출발",
-      "acceptedRequests": "수락한 요청 ({{count}}개)",
-      "pendingRequests": "신청 중인 요청 ({{count}}개)",
-      "pending": "신청중",
-      "requester": "요청자",
-      "noName": "이름 없음",
-      "totalReward": "총 수고비",
-      "matchedRequests": "매칭된 요청"
+      "myTrips": "내 여정",
+      "noTrips": "등록된 여정이 없습니다",
+      "noTripsDesc": "첫 번째 여정을 등록해보세요!",
+      "createNewTrip": "새 여정 등록",
+      "pendingRequests": "신청 중인 요청",
+      "pendingCount": "현재 {{count}}개의 신청 중인 요청이 있습니다"
     }
   },
   "home": {
