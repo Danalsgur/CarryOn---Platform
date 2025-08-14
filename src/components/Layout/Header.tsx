@@ -284,8 +284,14 @@ export default function Header() {
                 {/* 로그아웃 */}
                 <div className="p-4">
                   <button 
-                    onClick={async () => {
-                      await logout()
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      try {
+                        await logout()
+                      } catch (error) {
+                        console.error('로그아웃 버튼 오류:', error)
+                      }
                     }}
                     className="flex items-center gap-2 w-full px-3 py-2 rounded-control hover:bg-red-50 text-red-600 transition-colors duration-200"
                   >
@@ -485,8 +491,14 @@ export default function Header() {
                 {/* 로그아웃 */}
                 <div className="pt-4 border-t border-gray-100">
                   <button 
-                    onClick={async () => {
-                      await logout()
+                    onClick={async (e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      try {
+                        await logout()
+                      } catch (error) {
+                        console.error('로그아웃 버튼 오류:', error)
+                      }
                     }}
                     className="flex items-center gap-3 w-full px-4 py-3 rounded-control hover:bg-red-50 text-red-600 transition-colors duration-200"
                   >
