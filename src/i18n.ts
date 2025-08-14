@@ -18,9 +18,9 @@ i18n
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
     // 지원하는 언어 목록
-    supportedLngs: ['ko', 'en'],
+    supportedLngs: ['en', 'ko'],
     // 기본 언어
-    fallbackLng: 'ko',
+    fallbackLng: 'en',
     // 디버깅 모드 (개발 중에만 true로 설정)
     debug: import.meta.env.DEV,
     // 네임스페이스
